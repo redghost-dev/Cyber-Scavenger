@@ -1,0 +1,857 @@
+<%- include('partials/header') %>
+
+<style>
+@keyframes highlight {
+    0% { background-color: rgba(50, 255, 100, 0.2); }
+    100% { background-color: transparent; }
+}
+.cursor-pointer { cursor: pointer; }
+</style>
+
+<!-- AI Generator Section -->
+<div class="card border-primary mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#aiGeneratorBody" style="cursor: pointer;">
+        <h5 class="mb-0"><i class="fas fa-magic me-2"></i>AI Boss Generator (Beta)</h5>
+        <div>
+            <span class="badge bg-light text-primary me-2">Gemini 2.0 Flash</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+    <div id="aiGeneratorBody" class="collapse">
+        <div class="card-body bg-dark">
+            <div class="row align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label text-white">Boss Theme / Concept</label>
+                    <input type="text" id="bossTheme" class="form-control bg-black text-white border-secondary" placeholder="e.g. 'cyberpunk dragon', 'void glitch', 'ancient sentinel'">
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="form-check form-switch me-3">
+                            <!-- Fallback Switch with current state from Config -->
+                            <input class="form-check-input" type="checkbox" id="aiEnableFallback" <%= (config && config.ai && config.ai.enableFallback) ? 'checked' : '' %>>
+                            <label class="form-check-label text-info" for="aiEnableFallback">
+                                <i class="fas fa-brain me-1"></i> Enable Smart Fallback
+                            </label>
+                        </div>
+                        <small class="text-muted">(Uses procedural generation if AI API fails)</small>
+                    </div>
+
+                    <div class="form-text text-muted mt-2">Leave empty for random creative generation.</div>
+                </div>
+                <div class="col-md-4">
+                    <button id="btnGenerateBoss" class="btn btn-primary w-100" onclick="generateBoss()">
+                        <i class="fas fa-robot me-2"></i>Generate Boss Prototype
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Output Area -->
+            <!-- TERMINAL LOG AREA -->
+            <div id="generationTerminal" class="mt-3 bg-black border border-secondary font-monospace text-success d-none position-relative" style="height: 150px;">
+                <button onclick="copyLogs()" class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" title="Copy Logs">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <div class="text-secondary border-bottom border-dark p-2 pb-1 bg-dark bg-opacity-25" style="font-size: 0.8rem;">AI PROCESS LOGS...</div>
+                <div id="terminalContent" class="p-2" style="height: 115px; overflow-y: auto; font-size: 0.8rem;"></div>
+            </div>
+
+            <div id="generationValid" class="mt-3 d-none">
+                <div class="alert alert-success border-success bg-success bg-opacity-10 text-success">
+                    <strong><i class="fas fa-check-circle"></i> Success!</strong> Boss generated and saved to DB. Refresh to see in list.
+                    <div id="bossSummary" class="mt-2 text-white"></div>
+                    <button class="btn btn-sm btn-outline-light mt-2" onclick="location.reload()"><i class="fas fa-sync me-1"></i> Refresh List</button>
+                </div>
+            </div>
+
+            <div id="generationError" class="mt-3 d-none">
+                <div class="alert alert-danger" id="errorMsg"></div>
+            </div>
+
+            <div id="generationLoading" class="mt-3 d-none text-center p-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">AI is dreaming up a boss... (This may take 5-10 seconds)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0">Boss Listesi</h5>
+    <!-- Manual Add Button if needed later -->
+</div>
+
+<!-- Boss Listesi -->
+<div class="card bg-dark border-secondary">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle" id="bossTable">
+                <thead class="bg-black bg-opacity-25">
+                    <tr>
+                        <th class="ps-4 cursor-pointer" onclick="sortTable(0)">Sıra <i class="fas fa-sort text-muted small ms-1"></i></th>
+                        <th class="cursor-pointer" onclick="sortTable(1)">Boss Adı <i class="fas fa-sort text-muted small ms-1"></i></th>
+                        <th onclick="sortTable(2)">Görsel Tip <i class="fas fa-sort text-muted small ms-1"></i></th>
+                        <th onclick="sortTable(3)">HP / Çarpan</th>
+                        <th>Kaynak</th>
+                        <th>Durum</th>
+                        <th class="text-end pe-4">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (bosses.length === 0) { %>
+                        <tr id="emptyRow">
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-robot fa-3x mb-3"></i>
+                                <p class="mb-0">Henüz hiç boss oluşturulmamış.</p>
+                                <a href="/admin" class="btn btn-sm btn-outline-primary mt-3">Dashboard'dan Oluştur</a>
+                            </td>
+                        </tr>
+                    <% } else { %>
+                        <% bosses.forEach(boss => { %>
+                            <tr id="row-<%= boss.id %>">
+                                <td class="ps-4 fw-bold text-warning">
+                                    #<%= boss.order || 0 %>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px; background-color: <%= boss.color %>20; border: 2px solid <%= boss.color %>;">
+                                            <i class="fas fa-skull" style="color: <%= boss.color %>;"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-white"><%= boss.name %></div>
+                                            <div class="small text-muted" style="font-size: 0.75rem;"><%= boss.id %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">
+                                        <%= boss.visualType %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-success" id="hp-txt-<%= boss.id %>"><i class="fas fa-heart me-1"></i> <%= (boss.hpMult || 1).toFixed(1) %>x</span>
+                                    <br>
+                                    <span class="text-danger small"><i class="fas fa-crosshairs me-1"></i> <%= (boss.attackChance || 0.1).toFixed(2) %></span>
+                                </td>
+                                <td>
+                                    <% if (boss.generatedByAI) { %>
+                                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">
+                                            <i class="fas fa-robot me-1"></i> AI
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25">
+                                            <i class="fas fa-user me-1"></i> Manuel
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <button onclick="toggleBoss(this, '<%= boss.id %>')" class="btn btn-sm p-0 border-0 <%= boss.enabled ? 'text-success' : 'text-secondary' %>" title="Durumu Değiştir">
+                                        <i class="fas <%= boss.enabled ? 'fa-toggle-on' : 'fa-toggle-off' %> fs-4"></i>
+                                    </button>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                onclick="openEditModal('<%= boss.id %>', <%= boss.hpMult || 1 %>, <%= boss.order || 0 %>)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                onclick="initPreview('<%= boss.id %>')">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteBossConfirm('<%= boss.id %>', '<%= boss.name %>')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-black border-primary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-primary"><i class="fas fa-vr-cardboard me-2"></i>Boss Simülasyonu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopPreview()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 position-relative">
+                <canvas id="previewCanvas" width="800" height="600" class="w-100 h-100 d-block"></canvas>
+                <div class="position-absolute top-0 start-0 p-3 text-white-50 small pointer-events-none">
+                     <span class="badge bg-dark border border-secondary me-2">WASD: Camera</span>
+                     <span class="badge bg-dark border border-secondary">Mouse: Aim</span>
+                </div>
+                <div id="previewStats" class="position-absolute bottom-0 start-0 p-3 text-mono text-success small"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GENERIC DELETE CONFIRM MODAL -->
+<div class="modal fade" id="genericDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Boss'u Sil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+                <p class="mb-0"><strong><span id="deleteBossName"></span></strong> adlı boss'u silmek istediğinize emin misiniz?</p>
+                <p class="text-danger small mt-2 mb-0"><i class="fas fa-exclamation-triangle me-1"></i> Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Sil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Boss Düzenle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+                <input type="hidden" id="editBossId">
+                <div class="mb-3">
+                    <label class="form-label text-white">Can Çarpanı (HP Mult)</label>
+                    <input type="number" step="0.1" min="0.1" id="editHpMult" class="form-control bg-black text-white border-secondary">
+                    <div class="form-text text-muted">Örn: 1.5 = %150 Can. Zorluğu artırmak için artırın.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white">Sıralama (Order)</label>
+                    <input type="number" step="1" id="editOrder" class="form-control bg-black text-white border-secondary">
+                    <div class="form-text text-muted">Düşük numaralı bosslar önce çıkar (Game Mode Logic'e bağlı).</div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-success" id="saveEditBtn">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// Server Data Injection
+const REVIVED_BOSSES = <%- JSON.stringify(bosses) %>;
+
+// Bootstrap Modals - Initialize on DOMContentLoaded to fix "bootstrap is not defined" error
+let deleteModal;
+let editModal;
+let previewModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    deleteModal = new bootstrap.Modal(document.getElementById('genericDeleteModal'));
+    editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+});
+
+let animationFrameId;
+const canvas = document.getElementById('previewCanvas');
+const ctx = canvas.getContext('2d');
+let activeBoss = null;
+let activeMinions = [];
+let mockPlayer = { x: 400, y: 550, radius: 20 };
+let gameTime = 0;
+
+// Improve window.canvas shim for generated code
+window.canvas = { width: 800, height: 600 };
+
+function initPreview(bossId) {
+    // FORCE STOP any existing simulation to clear zombie states
+    stopPreview();
+
+    const bossData = REVIVED_BOSSES.find(b => b.id == bossId);
+    if (!bossData) return console.error("Boss ID not found:", bossId);
+
+    // Use global instance or create safety instance if DOM valid
+    if(previewModal) previewModal.show();
+    
+    // Reset State
+    gameTime = 0;
+    activeMinions = [];
+    
+    // Parse Logic
+    // Convert array of strings back to functions
+    const cleanCode = (code) => Array.isArray(code) ? code.join('\n') : (code || '');
+    
+    try {
+        const logic = bossData.logic || {};
+        
+        activeBoss = {
+            ...bossData,
+            x: 400,
+            y: -100, // Entrance start
+            radius: 60,
+            hp: 1000,
+            maxHp: 1000,
+            timer: 0,
+            rotation: 0,
+            state: 'entrance', // Start with entrance
+            
+            // Compiled Functions
+            _drawHp: new Function('ctx', 'boss', 'pct', cleanCode(logic.drawHp)),
+            _update: new Function('boss', 'player', 'canvas', 'projectiles', cleanCode(logic.update)),
+            _draw: logic.draw ? new Function('ctx', 'boss', 'canvas', 'player', cleanCode(logic.draw)) : null,
+            _entrance: {
+                duration: logic.entrance?.duration || 4000,
+                init: logic.entrance?.init ? new Function('boss', 'canvas', 'player', cleanCode(logic.entrance.init)) : null,
+                update: new Function('boss', 'progress', 'canvas', 'player', cleanCode(logic.entrance?.update)),
+                draw: new Function('ctx', 'boss', 'progress', 'canvas', 'player', cleanCode(logic.entrance?.draw))
+            },
+            _minionDef: logic.minions // Definition for spawning
+        };
+
+        // Run Entrance Init
+        if (activeBoss._entrance.init) {
+             activeBoss._entrance.init(activeBoss, canvas, mockPlayer);
+        }
+
+        // Initialize Minions if present
+        if (activeBoss._minionDef && activeBoss._minionDef.length > 0) {
+            activeBoss._minionDef.forEach(def => {
+                for(let i=0; i< (def.count || 1); i++) {
+                    const minion = {
+                        x: activeBoss.x + (Math.random()*100 - 50),
+                        y: activeBoss.y + (Math.random()*100 - 50),
+                        hp: def.hp,
+                        type: 'minion',
+                        index: i,
+                        logic: {
+                            init: def.logic?.init ? new Function('index', 'canvas', cleanCode(def.logic.init)) : null,
+                            update: new Function('boss', 'index', 'player', 'canvas', cleanCode(def.logic.update)),
+                            draw: new Function('ctx', 'boss', 'index', 'canvas', cleanCode(def.logic.draw))
+                        }
+                    };
+                    // Run minion init
+                    if(minion.logic.init) minion.logic.init.call(minion, i, canvas);
+                    activeMinions.push(minion);
+                }
+            });
+        }
+        
+        startLoop();
+        
+    } catch (e) {
+        // Show error visually in the modal
+        const errDiv = document.createElement('div');
+        errDiv.className = 'alert alert-danger position-absolute top-50 start-50 translate-middle w-75';
+        errDiv.innerHTML = `<strong>Simulation Init Error:</strong><br>${e.message}`;
+        document.querySelector('.modal-body').appendChild(errDiv);
+        console.error(e);
+    }
+}
+
+function stopPreview() {
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    activeBoss = null;
+    activeMinions = [];
+    
+    // Cleanup error alerts
+    // Check if document exists (safe check)
+    if(typeof document !== 'undefined') {
+        const modalBody = document.querySelector('.modal-body');
+        if(modalBody) {
+            const alerts = modalBody.querySelectorAll('.alert');
+            alerts.forEach(el => el.remove());
+        }
+    }
+}
+
+
+function startLoop() {
+    if (!activeBoss) return;
+    
+    try {
+        // Reset context completely just in case previous frame failed mid-draw
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        
+        // Clear
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw Grid
+        ctx.save();
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let i=0; i<800; i+=50) { ctx.moveTo(i,0); ctx.lineTo(i,600); }
+        for(let j=0; j<600; j+=50) { ctx.moveTo(0,j); ctx.lineTo(800,j); }
+        ctx.stroke();
+        ctx.restore();
+
+        // Draw Player (Mock)
+        ctx.fillStyle = '#0ff';
+        ctx.beginPath();
+        ctx.arc(mockPlayer.x, mockPlayer.y, mockPlayer.radius, 0, Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 10; ctx.shadowColor = '#0ff'; ctx.stroke(); ctx.shadowBlur = 0;
+
+        // --- BOSS LOGIC ---
+        activeBoss.timer = (activeBoss.timer || 0) + 16; // Always increment timer (~60fps dt)
+
+        if (activeBoss.state === 'entrance') {
+            const progress = Math.min(1, activeBoss.timer / activeBoss._entrance.duration);
+            
+            if (activeBoss._entrance.update) activeBoss._entrance.update(activeBoss, progress, canvas, mockPlayer);
+            if (activeBoss._entrance.draw) {
+                // Save context before external draw
+                try {
+                    ctx.save();
+                    activeBoss._entrance.draw(ctx, activeBoss, progress, canvas, mockPlayer);
+                } finally {
+                    ctx.restore();
+                }
+            } else if (activeBoss._draw) {
+                 // Fallback: Use main draw if entrance draw is missing
+                 try {
+                     ctx.save();
+                     ctx.globalAlpha = progress;
+                     activeBoss._draw(ctx, activeBoss, canvas, mockPlayer);
+                 } finally {
+                     ctx.restore();
+                 }
+            }
+            
+            if (progress >= 1) {
+                activeBoss.state = 'active';
+                activeBoss.timer = 0;
+            }
+        } else {
+            // Update
+            // SYNC MINIONS: Ensure generated code can access minions array
+            activeBoss.minions = activeMinions; 
+            
+            // Safety Check: NaN Coordinates
+            if (typeof activeBoss.x !== 'number' || isNaN(activeBoss.x)) activeBoss.x = canvas.width / 2;
+            if (typeof activeBoss.y !== 'number' || isNaN(activeBoss.y)) activeBoss.y = 150;
+
+            if (activeBoss._update) activeBoss._update(activeBoss, mockPlayer, canvas, []); 
+            
+            // Draw
+            if (activeBoss._draw) {
+                try {
+                    ctx.save();
+                    activeBoss._draw(ctx, activeBoss, canvas, mockPlayer);
+                } catch(e) {
+                    console.error("Draw Error:", e);
+                    // Draw Error Placeholder
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 5;
+                    ctx.strokeRect(activeBoss.x - 20, activeBoss.y - 20, 40, 40);
+                    ctx.fillStyle = 'white';
+                    ctx.fillText('DRAW ERR', activeBoss.x - 30, activeBoss.y - 30);
+                } finally {
+                    ctx.restore();
+                }
+            } else {
+                // Fallback Draw if missing
+                 ctx.fillStyle = activeBoss.color || 'red';
+                 ctx.beginPath(); ctx.arc(activeBoss.x, activeBoss.y, 30, 0, Math.PI*2); ctx.fill();
+            }
+
+            // Draw Custom HP Bar if available
+            if (activeBoss._drawHp) {
+                try {
+                    ctx.save();
+                    // Percentage 0-100
+                    const pct = (activeBoss.hp / activeBoss.maxHp) * 100;
+                    activeBoss._drawHp(ctx, activeBoss, pct, canvas);
+                } catch(e) {
+                    console.warn("HP Draw Error", e);
+                } finally {
+                    ctx.restore();
+                }
+            }
+
+            // Draw Minions
+            if (activeMinions && activeMinions.length > 0) {
+                activeMinions.forEach(minion => {
+                    try {
+                        // Update Minion: bind 'this' to minion
+                        if(minion.logic.update) minion.logic.update.call(minion, activeBoss, minion.index, mockPlayer, canvas);
+                        
+                        // Draw Minion: Wrap in save/restore and ensure restore is called
+                        ctx.save();
+                        if(minion.logic.draw) minion.logic.draw.call(minion, ctx, activeBoss, minion.index, canvas);
+                    } catch(err) {
+                        console.error("Minion Error:", err);
+                    } finally {
+                        ctx.restore();
+                    }
+                });
+            }
+        }
+        
+        // Stats
+        const bossX = (typeof activeBoss.x === 'number') ? Math.round(activeBoss.x) : "NaN";
+        const bossY = (typeof activeBoss.y === 'number') ? Math.round(activeBoss.y) : "NaN";
+        
+        document.getElementById('previewStats').innerHTML = 
+            `STATE: ${activeBoss.state} | T: ${Math.round(activeBoss.timer)}<br>` +
+            `POS: [${bossX}, ${bossY}] | SCALE: ${(activeBoss.scale||1).toFixed(2)}<br>` +
+            `MINIONS: ${activeMinions.length}`;
+            
+        // Continue Loop
+        animationFrameId = requestAnimationFrame(startLoop);
+
+    } catch (err) {
+        // CRITICAL ERROR: Stop the loop immediately
+        console.error("SIMULATION CRASH:", err);
+        
+        // Visual Error Feedback
+        ctx.fillStyle = 'rgba(0,0,0,0.9)';
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#ff5555';
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText("FATAL RUNTIME ERROR:", 20, 40);
+        ctx.fillText("Simulation Stopped.", 20, 60);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '14px monospace';
+        // Wrap text logic roughly
+        const msg = err.message || err.toString();
+        ctx.fillText(msg.substring(0, 80), 20, 90);
+        if(msg.length > 80) ctx.fillText(msg.substring(80, 160), 20, 110);
+        
+        activeBoss = null; // Kill the boss
+        cancelAnimationFrame(animationFrameId); // Kill the loop
+    }
+}
+
+// Simple Mouse Tracker for Mock Player
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mockPlayer.x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    mockPlayer.y = (e.clientY - rect.top) * (canvas.height / rect.height);
+});
+
+// AI GENERATOR SCRIPT
+async function generateBoss() {
+    const btn = document.getElementById('btnGenerateBoss');
+    const themeInput = document.getElementById('bossTheme');
+    const fallbackInput = document.getElementById('aiEnableFallback'); 
+    const loading = document.getElementById('generationLoading');
+    const validDiv = document.getElementById('generationValid');
+    const errorDiv = document.getElementById('generationError');
+    const summary = document.getElementById('bossSummary');
+    const errorMsg = document.getElementById('errorMsg');
+    
+    // NEW TERMINAL ELEMENTS
+    const terminalDiv = document.getElementById('generationTerminal');
+    const terminalContent = document.getElementById('terminalContent');
+
+    // Reset UI
+    loading.classList.remove('d-none');
+    validDiv.classList.add('d-none');
+    errorDiv.classList.add('d-none');
+    
+    // SHOW TERMINAL WITH LOADING STATE
+    terminalDiv.classList.remove('d-none');
+    terminalContent.innerHTML = '> Initializing Request...<br>> Connecting to Server...<br>';
+    
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/admin/generate-boss', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'CSRF-Token': '<%= csrfToken %>' 
+            },
+            body: JSON.stringify({ 
+                theme: themeInput.value,
+                enableFallback: fallbackInput.checked, // SEND CHECKBOX STATE
+                _csrf: '<%= csrfToken %>' 
+            })
+        });
+
+        const result = await response.json();
+
+        loading.classList.add('d-none');
+        btn.disabled = false;
+        
+        // RENDER LOGS
+        if (result.logs && result.logs.length > 0) {
+            terminalContent.innerHTML = result.logs.map(l => `> ${l}`).join('<br>');
+        } else {
+             terminalContent.innerHTML += '> Process completed (No Logs Returned)<br>';
+        }
+
+        if (result.success) {
+            validDiv.classList.remove('d-none');
+            // ... (keep existing summary update)
+            summary.innerHTML = `<strong>${result.data.name}</strong> (${result.data.visualType}) created!`;
+            addBossToTable(result.data);
+            terminalContent.innerHTML += `<br><span class="text-white bg-success px-1">SUCCESS</span> Boss Saved: ${result.data.id}`;
+        } else {
+             errorDiv.classList.remove('d-none');
+             errorMsg.textContent = result.error || "Unknown error occurred";
+             terminalContent.innerHTML += `<br><span class="text-white bg-danger px-1">FAILED</span> ${result.error || "Unknown Error"}`;
+        }
+
+    } catch (e) {
+        loading.classList.add('d-none');
+        btn.disabled = false;
+        errorDiv.classList.remove('d-none');
+        errorMsg.textContent = "Network Error: " + e.message;
+        terminalContent.innerHTML += `<br><span class="text-white bg-danger px-1">CRITICAL</span> Client Network Error`;
+    }
+}
+
+
+function addBossToTable(boss) {
+    const tbody = document.querySelector('#bossTable tbody');
+    const emptyRow = document.getElementById('emptyRow');
+    if(emptyRow) emptyRow.remove();
+
+    const tr = document.createElement('tr');
+    tr.id = `row-${boss.id}`;
+    tr.innerHTML = `
+        <td class="ps-4">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                        style="width: 40px; height: 40px; background-color: ${boss.color}20; border: 2px solid ${boss.color};">
+                    <i class="fas fa-skull" style="color: ${boss.color};"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white">${boss.name}</div>
+                    <div class="small text-muted" style="font-size: 0.75rem;">${boss.id}</div>
+                </div>
+            </div>
+        </td>
+        <td>
+            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">
+                ${boss.visualType}
+            </span>
+        </td>
+        <td>
+            <span class="text-success"><i class="fas fa-heart me-1"></i> ${(boss.hpMult || 1).toFixed(1)}x</span><br>
+            <span class="text-danger small"><i class="fas fa-crosshairs me-1"></i> ${(boss.attackChance || 0.1).toFixed(2)}</span>
+        </td>
+        <td>
+            <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">
+                <i class="fas fa-robot me-1"></i> AI
+            </span>
+        </td>
+        <td>
+            <button onclick="toggleBoss(this, '${boss.id}')" class="btn btn-sm p-0 border-0 text-success" title="Durumu Değiştir">
+                <i class="fas fa-toggle-on fs-4"></i>
+            </button>
+        </td>
+        <td>
+            <div class="text-secondary small">
+                <i class="far fa-calendar-alt me-1"></i>
+                ${new Date().toLocaleDateString('tr-TR')}
+            </div>
+            <div class="text-secondary small" style="font-size: 0.75rem;">
+                ${new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}
+            </div>
+        </td>
+        <td class="text-end pe-4">
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="initPreview('${boss.id}')">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteBossConfirm('${boss.id}', '${boss.name}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>
+    `;
+    
+    // Add animation
+    tr.style.animation = "highlight 2s";
+    tbody.insertBefore(tr, tbody.firstChild);
+    
+    // Add to global cache
+    REVIVED_BOSSES.push(boss);
+}
+
+// --- ADMIN ACTIONS (AJAX) ---
+
+async function toggleBoss(btn, id) {
+    const icon = btn.querySelector('i');
+    const originalClass = icon.className;
+    
+    try {
+        // Optimistic UI Update
+        const isOn = icon.classList.contains('fa-toggle-on');
+        icon.className = isOn ? 'fas fa-toggle-off fs-4' : 'fas fa-toggle-on fs-4';
+        btn.className = `btn btn-sm p-0 border-0 ${isOn ? 'text-secondary' : 'text-success'}`;
+
+        // Send Request
+        // Note: Controller redirects, so we use fetch and ignore response content if OK
+        await fetch(`/admin/bosses/toggle/${id}`, {
+            method: 'POST',
+            headers: { 'CSRF-Token': '<%= csrfToken %>' }
+        });
+        
+    } catch(e) {
+        console.error("Toggle error:", e);
+        // Revert on error
+        icon.className = originalClass;
+        alert("İşlem başarısız oldu.");
+    }
+}
+
+let deleteTargetId = null;
+
+function deleteBossConfirm(id, name) {
+    if(!deleteModal) return console.error("Modal not initialized yet");
+    deleteTargetId = id;
+    document.getElementById('deleteBossName').textContent = name;
+    deleteModal.show();
+}
+
+// EDIT LOGIC
+function openEditModal(id, currentHp, currentOrder) {
+    if(!editModal) return console.error("Modal not initialized yet");
+    
+    document.getElementById('editBossId').value = id;
+    document.getElementById('editHpMult').value = currentHp;
+    document.getElementById('editOrder').value = currentOrder;
+    
+    editModal.show();
+}
+
+document.getElementById('saveEditBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveEditBtn');
+    const id = document.getElementById('editBossId').value;
+    const hpMult = document.getElementById('editHpMult').value;
+    const order = document.getElementById('editOrder').value;
+    
+    btn.disabled = true;
+    btn.textContent = "Kaydediliyor...";
+    
+    try {
+        const response = await fetch(`/admin/bosses/update/${id}`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'CSRF-Token': '<%= csrfToken %>' 
+            },
+            body: JSON.stringify({ hpMult, order, _csrf: '<%= csrfToken %>' })
+        });
+        
+        const res = await response.json();
+        
+        if(res.success) {
+            // Update UI immediately (Optimistic)
+            document.getElementById(`hp-txt-${id}`).innerHTML = `<i class="fas fa-heart me-1"></i> ${parseFloat(hpMult).toFixed(1)}x`;
+            // For order, we might ideally reload or re-sort, but let's just close modal for now.
+            // A page reload is safer to reflect order change OR we move the row manually.
+            location.reload(); 
+        } else {
+            alert("Hata: " + (res.error || "Bilinmeyen hata"));
+        }
+        
+    } catch(e) {
+        alert("Bağlantı Hatası: " + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Kaydet";
+        editModal.hide();
+    }
+});
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+    if(!deleteTargetId) return;
+    
+    const btn = document.getElementById('confirmDeleteBtn');
+    const originalText = btn.textContent;
+    btn.textContent = "Siliniyor...";
+    btn.disabled = true;
+    
+    try {
+        await fetch(`/admin/bosses/delete/${deleteTargetId}`, {
+            method: 'POST',
+            headers: { 'CSRF-Token': '<%= csrfToken %>' }
+        });
+        
+        // Remove Row
+        const row = document.getElementById(`row-${deleteTargetId}`);
+        if(row) {
+            row.style.transition = "all 0.5s";
+            row.style.opacity = "0";
+            setTimeout(() => row.remove(), 500);
+        }
+        
+        deleteModal.hide();
+        
+    } catch(e) {
+        alert("Silme işlemi başarısız: " + e.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+        deleteTargetId = null;
+    }
+});
+
+function sortTable(n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("bossTable");
+  switching = true;
+  dir = "asc"; 
+  while (switching) {
+    switching = false;
+    rows = table.rows;
+    for (i = 1; i < (rows.length - 1); i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("TD")[n];
+        y = rows[i + 1].getElementsByTagName("TD")[n];
+        
+        let xVal = x.textContent.toLowerCase();
+        let yVal = y.textContent.toLowerCase();
+
+        if (dir == "asc") {
+            if (xVal > yVal) { shouldSwitch = true; break; }
+        } else if (dir == "desc") {
+            if (xVal < yVal) { shouldSwitch = true; break; }
+        }
+    }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      switchcount ++;      
+    } else {
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+function copyLogs() {
+    const logs = document.getElementById('terminalContent').innerText;
+    navigator.clipboard.writeText(logs).then(() => {
+        // Optional: Change icon briefly
+        const btn = document.querySelector('button[title="Copy Logs"] i');
+        const originalClass = btn.className;
+        btn.className = "fas fa-check";
+        setTimeout(() => { btn.className = originalClass; }, 1000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert("Could not copy logs to clipboard.");
+    });
+}
+
+</script>
+
+<%- include('partials/footer') %>

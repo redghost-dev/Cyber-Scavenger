@@ -1,0 +1,110 @@
+<%- include('partials/header') %>
+
+<div class="row g-4">
+    <!-- Toplam Kullanıcı -->
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Toplam Kullanıcı</h6>
+                        <h3 class="mb-0"><%= stats.totalUsers %></h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-users text-primary fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Online Kullanıcı -->
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Online (Son 5dk)</h6>
+                        <h3 class="mb-0 text-success"><%= stats.onlineUsers %></h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-signal text-success fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Eşyaları -->
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Market Eşyaları</h6>
+                        <h3 class="mb-0"><%= stats.totalItems %></h3>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-shopping-bag text-warning fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bekleyen Geri Bildirimler -->
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Geri Bildirimler</h6>
+                        <h3 class="mb-0 <%= stats.pendingFeedbacks > 0 ? 'text-danger' : '' %>"><%= stats.pendingFeedbacks %></h3>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-comment-dots text-danger fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Sistem Durumu</h5>
+                <span class="badge bg-success">Aktif</span>
+            </div>
+            <div class="card-body">
+                <p>Cyber Scavenger yönetim paneline hoş geldiniz. Buradan tüm oyun ayarlarını, kullanıcıları ve marketi yönetebilirsiniz.</p>
+                <div class="alert alert-info bg-info bg-opacity-10 border-info text-info">
+                    <i class="fas fa-info-circle me-2"></i> Son 24 saat içinde <strong><%= stats.recentCheats %></strong> adet şüpheli hareket tespit edildi.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-transparent border-secondary">
+                <h5 class="mb-0">Hızlı İşlemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/admin/users" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-user-plus me-2"></i> Kullanıcı Ara
+                    </a>
+                    <a href="/admin/config" class="btn btn-outline-warning text-start">
+                        <i class="fas fa-tools me-2"></i> Bakım Modunu Aç/Kapat
+                    </a>
+                    <a href="/admin/items/new" class="btn btn-outline-success text-start">
+                        <i class="fas fa-plus me-2"></i> Yeni Eşya Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

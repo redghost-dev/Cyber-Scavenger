@@ -1,0 +1,159 @@
+<%- include('partials/header') %>
+
+<div class="card bg-dark text-white border-secondary mb-4">
+    <div class="card-body">
+        <form action="/admin/users" method="GET" class="row g-3">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control bg-dark border-secondary text-white" placeholder="Kullanıcı adı veya e-posta ile ara..." value="<%= search %>">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Ara</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card bg-dark text-white border-secondary">
+    <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Kullanıcı Listesi (<%= totalUsers %> Kayıt)</h5>
+        <div id="bulkActions" class="d-none">
+            <form action="/admin/users/bulk-action" method="POST" class="d-inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="userIds" id="selectedUserIds">
+                <select name="action" class="form-select form-select-sm d-inline-block w-auto bg-dark text-white border-secondary me-2">
+                    <option value="">Toplu İşlem Seç...</option>
+                    <option value="ban">Seçilenleri Yasakla</option>
+                    <option value="unban">Yasağı Kaldır</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Seçili kullanıcılara bu işlemi uygulamak istediğinize emin misiniz?')">Uygula</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th width="40"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                        <th>Kullanıcı</th>
+                        <th>E-posta</th>
+                        <th>Rol</th>
+                        <th>Seviye</th>
+                        <th>Kayıt Tarihi</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (users.length > 0) { %>
+                        <% users.forEach(u => { %>
+                        <tr>
+                            <td><input type="checkbox" class="user-checkbox form-check-input" value="<%= u._id %>"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="<%= u.avatar || '/img/default-avatar.svg' %>" class="rounded-circle me-2" width="24" height="24">
+                                    <span><%= u.username %></span>
+                                </div>
+                            </td>
+                            <td><%= u.email %></td>
+                            <td>
+                                <span class="badge <%= u.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
+                                    <%= u.role.toUpperCase() %>
+                                </span>
+                            </td>
+                            <td><%= u.stats ? u.stats.level : 1 %></td>
+                            <td><%= new Date(u.createdAt).toLocaleDateString('tr-TR') %></td>
+                            <td>
+                                <% if (u.isBanned) { %>
+                                    <span class="badge bg-danger">Yasaklı</span>
+                                <% } else { %>
+                                    <span class="badge bg-success">Aktif</span>
+                                <% } %>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/admin/users/edit/<%= u._id %>" class="btn btn-outline-info" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="/admin/users/ban/<%= u._id %>" method="POST" class="d-inline">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <button type="submit" class="btn <%= u.isBanned ? 'btn-outline-success' : 'btn-outline-danger' %>" title="<%= u.isBanned ? 'Yasağı Kaldır' : 'Yasakla' %>">
+                                            <i class="fas <%= u.isBanned ? 'fa-user-check' : 'fa-user-slash' %>"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">Kullanıcı bulunamadı.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% if (totalPages > 1) { %>
+    <div class="card-footer bg-transparent border-secondary">
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link bg-dark border-secondary text-white" href="/admin/users?page=<%= currentPage - 1 %>&search=<%= search %>">Geri</a>
+                </li>
+                
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <% if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
+                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                            <a class="page-link <%= currentPage === i ? 'bg-primary border-primary' : 'bg-dark border-secondary text-white' %>" href="/admin/users?page=<%= i %>&search=<%= search %>"><%= i %></a>
+                        </li>
+                    <% } else if (i === currentPage - 3 || i === currentPage + 3) { %>
+                        <li class="page-item disabled"><span class="page-link bg-dark border-secondary text-white">...</span></li>
+                    <% } %>
+                <% } %>
+
+                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                    <a class="page-link bg-dark border-secondary text-white" href="/admin/users?page=<%= currentPage + 1 %>&search=<%= search %>">İleri</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <% } %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedUserIds = document.getElementById('selectedUserIds');
+
+    function updateBulkActions() {
+        const selected = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        if (selected.length > 0) {
+            bulkActions.classList.remove('d-none');
+            selectedUserIds.value = selected.join(',');
+        } else {
+            bulkActions.classList.add('d-none');
+            selectedUserIds.value = '';
+        }
+    }
+
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        updateBulkActions();
+    });
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkActions);
+    });
+});
+</script>
+
+<%- include('partials/footer') %>

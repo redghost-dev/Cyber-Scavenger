@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Terms of Service - Cyber Scavenger</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/intro.css">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-theme">
+    <%- include('partials/ux_effects') %>
+    <style>
+        .terms-container {
+            max-width: 800px;
+            margin: 50px auto;
+            position: relative;
+            z-index: 10;
+            padding: 2rem;
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 251, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            line-height: 1.8;
+        }
+        
+        .terms-container h1 {
+            color: var(--cyber-blue);
+            text-shadow: 0 0 10px var(--cyber-blue);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .terms-container h2 {
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+        
+        .terms-container p {
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--cyber-blue);
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .back-link:hover {
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+    </style>
+</head>
+<body class="full-screen-overlay">
+    <div class="terms-container">
+        <h1>KULLANICI SÖZLEŞMESİ</h1>
+        
+        <h2>1. Hizmet Şartları</h2>
+        <p>Cyber Scavenger oyununu kullanarak, bu kullanıcı sözleşmesini kabul etmiş sayılırsınız. Bu sözleşme, oyunun kullanımı, kuralları ve sorumluluklarınızı belirler.</p>
+        
+        <h2>2. Hesap Güvenliği</h2>
+        <p>Hesabınızın güvenliğinden siz sorumlusunuz. Şifrenizi kimseyle paylaşmamalı ve güvenli bir şifre kullanmalısınız. Hesabınızda yetkisiz aktivite fark ederseniz derhal bizimle iletişime geçmelisiniz.</p>
+        
+        <h2>3. Oyun Kuralları</h2>
+        <p>Oyunda hile, bot veya otomatik araçlar kullanmak yasaktır. Bu tür aktiviteler tespit edilirse hesabınız kalıcı olarak banlanabilir. Adil oyun prensiplerine uymanız beklenir.</p>
+        
+        <h2>4. Davranış Kuralları</h2>
+        <p>Diğer oyunculara saygılı olmalı, taciz, hakaret veya uygunsuz içerik paylaşmamalısınız. Topluluk kurallarını ihlal eden kullanıcılar geçici veya kalıcı olarak yasaklanabilir.</p>
+        
+        <h2>5. Veri Gizliliği</h2>
+        <p>Kişisel verileriniz gizlilik politikamıza uygun olarak korunur ve işlenir. E-posta adresiniz ve oyun istatistikleriniz güvenli bir şekilde saklanır. Verileriniz üçüncü şahıslarla paylaşılmaz.</p>
+        
+        <h2>6. İçerik ve Mülkiyet</h2>
+        <p>Oyundaki tüm içerik, grafikler, müzik ve kodlar Cyber Scavenger'ın mülkiyetindedir. Bu içerikleri izinsiz kopyalayamaz, dağıtamaz veya ticari amaçla kullanamazsınız.</p>
+        
+        <h2>7. Hizmet Değişiklikleri</h2>
+        <p>Oyunun özelliklerini, içeriğini veya bu sözleşmeyi önceden haber vermeksizin değiştirme hakkımız saklıdır. Önemli değişiklikler için kullanıcılar bilgilendirilir.</p>
+        
+        <h2>8. Sorumluluk Reddi</h2>
+        <p>Oyun "olduğu gibi" sunulmaktadır. Hizmet kesintileri veya veri kayıplarından sorumlu tutulamayız. Oyunu kullanmanızdan doğabilecek zararlardan sorumluluk kabul etmiyoruz.</p>
+        
+        <h2>9. Hesap Sonlandırma</h2>
+        <p>Kullanıcı sözleşmesini ihlal etmeniz durumunda hesabınızı önceden haber vermeden sonlandırma hakkımız saklıdır. Ayrıca, istediğiniz zaman hesabınızı silme talebinde bulunabilirsiniz.</p>
+        
+        <h2>10. İletişim</h2>
+        <p>Sorularınız veya sorunlarınız için bizimle iletişime geçebilirsiniz. Destek taleplerinize en kısa sürede yanıt vermeye çalışacağız.</p>
+        
+        <p style="margin-top: 2rem; color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">
+            Son güncelleme: <%= new Date().toLocaleDateString('tr-TR') %>
+        </p>
+        
+        <a href="/auth/register" class="back-link">← Kayıt Sayfasına Dön</a>
+    </div>
+</body>
+</html>

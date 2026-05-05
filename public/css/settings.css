@@ -1,0 +1,157 @@
+/* Game Settings Modal Styles */
+
+#settings-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--glass-bg);
+    z-index: var(--z-modal);
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    padding-top: 20px;
+    padding-bottom: var(--safe-area-bottom); /* Dock için güvenli alan */
+}
+
+.settings-content {
+    width: clamp(320px, 95%, 850px);
+    height: clamp(450px, 85vh, 900px);
+    display: flex;
+    flex-direction: column;
+    background: var(--panel-bg);
+    border: var(--neon-border);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), var(--neon-glow);
+    padding: var(--panel-padding);
+    border-radius: var(--border-radius-main);
+    animation: modalSlideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.settings-header {
+    color: var(--cyber-blue);
+    font-family: 'Courier New', monospace;
+    margin-bottom: 25px;
+    text-shadow: var(--neon-glow);
+    text-align: center;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+}
+
+.settings-section-title {
+    color: #aaa;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+}
+
+.settings-body {
+    width: 100%;
+    background: transparent;
+    padding: 0;
+    border: none;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Setting Rows */
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.setting-label {
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+}
+
+/* Toggle Switch */
+.setting-toggle {
+    width: 50px;
+    height: 25px;
+    background: #333;
+    border-radius: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.setting-toggle.active {
+    background: var(--cyber-blue);
+}
+
+.setting-knob {
+    width: 21px;
+    height: 21px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.3s;
+}
+
+.setting-toggle.active .setting-knob {
+    left: 27px;
+}
+
+.settings-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.ctrl-btn {
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: monospace;
+    flex: 1;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.ctrl-btn.active {
+    background: var(--cyber-blue);
+    color: #000;
+    border-color: #000;
+    font-weight: bold;
+}
+
+.ctrl-btn:hover:not(.active) {
+    background: #444;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+    .setting-label {
+        font-size: 0.9rem;
+    }
+    .settings-content {
+        padding: 15px;
+    }
+}

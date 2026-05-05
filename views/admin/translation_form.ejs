@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-edit me-2"></i><%= title %></h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/translations">Diller</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><%= translation.language.toUpperCase() %></li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card bg-dark text-white border-secondary">
+    <div class="card-body">
+        <form action="/admin/translations/save" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="language" value="<%= translation.language %>">
+            
+            <div class="mb-3">
+                <label class="form-label">JSON Verisi</label>
+                <div class="alert alert-info bg-dark text-info border-info small py-2">
+                    <i class="fas fa-info-circle me-1"></i> Lütfen geçerli bir JSON formatı kullanın. Hatalı format kaydedilmeyecektir.
+                </div>
+                <textarea name="jsonData" class="form-control bg-black text-success font-monospace" rows="25" style="font-size: 14px; border-color: #333;"><%= jsonData %></textarea>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="/admin/translations" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Geri Dön
+                </a>
+                <button type="submit" class="btn btn-primary px-5">
+                    <i class="fas fa-save me-1"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .bg-black { background-color: #000 !important; }
+    .font-monospace { font-family: 'Courier New', Courier, monospace !important; }
+</style>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,69 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-shield-alt me-2"></i>Hile Kayıtları</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <form action="/admin/cheat-logs/clear" method="POST" onsubmit="return confirm('Tüm hile kayıtlarını temizlemek istediğinize emin misiniz?')">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-broom me-1"></i> Tümünü Temizle
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="alert alert-warning bg-dark text-warning border-warning d-flex align-items-center" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <div>
+        Bu kayıtlar sistem tarafından otomatik olarak oluşturulur. Şüpheli hareketleri buradan takip edebilirsiniz.
+    </div>
+</div>
+
+<div class="card bg-dark text-white border-secondary">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Kullanıcı</th>
+                        <th>Tür</th>
+                        <th>Detay</th>
+                        <th>IP Adresi</th>
+                        <th>Tarih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (logs.length > 0) { %>
+                        <% logs.forEach(log => { %>
+                            <tr>
+                                <td>
+                                    <% if (log.user) { %>
+                                        <strong><%= log.user.username %></strong>
+                                    <% } else { %>
+                                        <span class="text-muted">Bilinmiyor</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="badge <%= log.type === 'speed' ? 'bg-danger' : 'bg-warning text-dark' %>">
+                                        <%= log.type %>
+                                    </span>
+                                </td>
+                                <td><code><%= log.details %></code></td>
+                                <td><small><%= log.ipAddress || 'N/A' %></small></td>
+                                <td>
+                                    <%= new Date(log.createdAt).toLocaleString('tr-TR') %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Henüz hile kaydı bulunmuyor.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

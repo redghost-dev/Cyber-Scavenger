@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050510">
+  <title>Shop - Cyber Scavenger</title>
+
+  <style>
+    html, body { background-color: #050510 !important; margin: 0; padding: 0; }
+    #cyber-intro {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #050510;
+      z-index: 99999;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/intro.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/all.min.css">
+  <style>
+    body {
+      overflow-y: auto !important;
+      height: auto !important;
+      padding-top: 20px;
+      background-color: transparent !important;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+    }
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      padding-top: 140px; /* Space for fixed header */
+      padding-bottom: 100px;
+    }
+    .cyber-header {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 95%;
+      max-width: 1200px;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      margin-bottom: 40px;
+      /* Glassmorphism Dark Cyberpunk */
+      background: rgba(5, 12, 5, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 255, 0, 0.2);
+      border-top: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 
+                  0 0 20px rgba(0, 255, 0, 0.1) inset;
+      
+      /* Tech Shape */
+      clip-path: polygon(
+        0 0, 
+        100% 0, 
+        100% 85%, 
+        98% 100%, 
+        2% 100%, 
+        0 85%
+      );
+      transition: all 0.3s ease;
+    }
+    
+    /* Glowing bottom accent */
+    .cyber-header::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40%;
+        height: 2px;
+        background: #0f0;
+        box-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+        opacity: 0.8;
+        z-index: 1001;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .header-title h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        font-weight: 900;
+        letter-spacing: 2px;
+        line-height: 1;
+        font-style: italic;
+    }
+    .header-title h1 span {
+        color: #0f0;
+        text-shadow: 0 0 15px #0f0;
+    }
+    .header-title p {
+        margin: 5px 0 0 0;
+        color: #0f0;
+        font-size: 0.8rem;
+        opacity: 0.8;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+    }
+
+    .back-btn-mini {
+      color: #0f0;
+      text-decoration: none;
+      border: 1px solid rgba(0, 255, 0, 0.3);
+      padding: 8px 15px;
+      border-radius: 2px;
+      transition: all 0.3s;
+      background: rgba(0, 20, 0, 0.4);
+      font-weight: bold;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .back-btn-mini:hover {
+      background: #0f0;
+      color: #000;
+      box-shadow: 0 0 15px #0f0;
+    }
+
+    /* Wallet Display */
+    .header-wallet {
+      display: flex;
+      gap: 25px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 20px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 255, 0, 0.3);
+    }
+    .wallet-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+    }
+    .coin-icon { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
+    .gem-icon { color: #0ff; text-shadow: 0 0 10px #0ff; }
+
+    /* Mobile Responsive Header */
+    @media (max-width: 768px) {
+        .container {
+            padding-top: 240px; /* More space for mobile header */
+        }
+
+        .cyber-header {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% 95%, 
+                95% 100%, 
+                5% 100%, 
+                0 95%
+            );
+        }
+        
+        .header-left {
+            width: 100%;
+            justify-content: space-between;
+            flex-direction: row-reverse; /* Title left, Back btn right or vice versa. Let's keep standard: Back Left */
+            flex-direction: row;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+        }
+        
+        .header-title p {
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+        }
+
+        .header-wallet {
+            width: 100%;
+            justify-content: space-around;
+            padding: 8px;
+            gap: 10px;
+        }
+        
+        .wallet-item {
+            font-size: 1rem;
+        }
+        
+        .shop-tabs {
+            gap: 5px;
+        }
+        
+        .tab-btn {
+            padding: 8px 15px;
+            min-width: auto;
+            font-size: 0.8rem;
+            flex: 1;
+        }
+    }
+
+    /* Tabs */
+    .shop-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    .tab-btn {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid #0f0;
+        color: #0f0;
+        padding: 12px 25px;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        min-width: 120px;
+        text-align: center;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+    .tab-btn:hover {
+        background: rgba(0, 255, 0, 0.15);
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        transform: translateY(-2px);
+    }
+    .tab-btn.active {
+        background: #0f0;
+        color: #000;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        font-weight: 900;
+    }
+
+    /* Shop Grid */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+    
+    .item-card {
+      background: rgba(10, 10, 10, 0.8);
+      border: 1px solid rgba(0, 255, 0, 0.3);
+      border-radius: 8px;
+      padding: 25px;
+      text-align: center;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+    .item-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+      border-color: #0f0;
+      background: rgba(20, 30, 20, 0.9);
+    }
+    
+    .item-image {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px auto;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 255, 0, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #fff;
+      box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1);
+    }
+    
+    .item-name {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #fff;
+      text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    }
+    
+    .item-desc {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 20px;
+      min-height: 40px;
+      line-height: 1.4;
+    }
+    
+    .item-price {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #ffd700;
+    }
+    
+    .buy-btn {
+      background: transparent;
+      border: 1px solid #0f0;
+      color: #0f0;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .buy-btn:hover {
+      background: #0f0;
+      color: #000;
+      box-shadow: 0 0 15px #0f0;
+    }
+    .buy-btn:disabled {
+      border-color: #555;
+      color: #555;
+      cursor: not-allowed;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .owned-badge {
+      background: rgba(0, 255, 0, 0.2);
+      color: #0f0;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      display: inline-block;
+      width: 100%;
+      border: 1px solid #0f0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .equip-btn {
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid #0ff;
+      color: #0ff;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .equip-btn:hover {
+      background: #0ff;
+      color: #000;
+      box-shadow: 0 0 15px #0ff;
+    }
+    .equipped-badge {
+      background: #0ff;
+      color: #000;
+      padding: 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      display: inline-block;
+      width: 100%;
+      box-shadow: 0 0 10px #0ff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* Toast Notification */
+    #toast {
+      visibility: hidden;
+      min-width: 300px;
+      background-color: rgba(0, 0, 0, 0.9);
+      color: #0f0;
+      text-align: center;
+      border-radius: 4px;
+      padding: 20px;
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      border: 1px solid #0f0;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;}
+      to {bottom: 30px; opacity: 1;}
+    }
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+    <%- include('partials/intro') %>
+  <%- include('partials/ux_effects') %>
+  <div class="container">
+    
+    <div class="cyber-header">
+        <div class="header-left">
+            <a href="/" class="back-btn-mini"><i class="fas fa-chevron-left"></i> <span data-i18n="back_to_base">BASE</span></a>
+            <div class="header-title">
+                <h1><span data-i18n="shop.title_prefix">CYBER</span><span data-i18n="shop.title_suffix">SHOP</span></h1>
+                <p data-i18n="shop.subtitle">ARMORY & UPGRADES</p>
+            </div>
+        </div>
+        
+        <div class="header-wallet">
+             <div class="wallet-item">
+                <i class="fas fa-coins coin-icon"></i>
+                <span id="wallet-coins"><%= (user.wallet && user.wallet.coins) ? user.wallet.coins.toLocaleString() : 0 %></span>
+             </div>
+             <div class="wallet-item">
+                <i class="fas fa-gem gem-icon"></i>
+                <span id="wallet-gems"><%= (user.wallet && user.wallet.gems) ? user.wallet.gems.toLocaleString() : 0 %></span>
+             </div>
+        </div>
+    </div>
+
+    <div class="shop-tabs">
+        <button class="tab-btn active" onclick="switchShopTab('ships')" data-i18n="shop.ships">SHIPS</button>
+        <button class="tab-btn" onclick="switchShopTab('trails')" data-i18n="shop.trails">TRAILS</button>
+        <button class="tab-btn" onclick="switchShopTab('skins')" data-i18n="shop.skins">SKINS</button>
+        <button class="tab-btn" onclick="switchShopTab('powerups')" data-i18n="shop.powerups">POWERUPS</button>
+    </div>
+
+    <% 
+       // Helper function to render item card
+       function renderItemCard(item) {
+          const ownedItem = user.inventory.find(inv => inv.item && inv.item._id.toString() === item._id.toString());
+          const isOwned = !!ownedItem;
+          const isEquipped = ownedItem && ownedItem.isEquipped;
+          const canAfford = item.currencyType === 'coin' ? 
+              (user.wallet.coins >= item.price) : 
+              (user.wallet.gems >= item.price);
+    %>
+        <div class="item-card">
+          <div class="item-image" 
+               data-type="<%= item.type %>" 
+               data-color="<%= item.color || '#0f0' %>" 
+               data-name="<%= item.name %>"
+               style="border-color: <%= item.color || '#0f0' %>; box-shadow: 0 0 15px <%= item.color || '#0f0' %>;">
+            <% if (item.type === 'ship') { %> <i class="fas fa-rocket"></i>
+            <% } else if (item.type === 'skin') { %> <i class="fas fa-paint-brush"></i>
+            <% } else if (item.type === 'trail') { %> <i class="fas fa-wind"></i>
+            <% } else if (item.type === 'powerup') { %> <i class="fas fa-bolt"></i>
+            <% } else { %> <i class="fas fa-box"></i> <% } %>
+          </div>
+          <div class="item-name" style="color: <%= item.color || '#fff' %>"><%= item.name %></div>
+          <div class="item-desc"><%= item.description %></div>
+          
+          <% if (!isOwned || item.type === 'powerup' || item.type === 'currency_pack') { %>
+            <div class="item-price">
+              <% if (item.currencyType === 'coin') { %>
+                <i class="fas fa-coins coin-icon"></i>
+              <% } else { %>
+                <i class="fas fa-gem gem-icon"></i>
+              <% } %>
+              <%= item.price %>
+            </div>
+            <button class="buy-btn" onclick="buyItem('<%= item._id %>')" <%= !canAfford ? 'disabled' : '' %> data-i18n="shop.buy">
+              BUY
+            </button>
+          <% } else { %>
+             <div class="item-price" style="visibility: hidden;" data-i18n="shop.owned">Owned</div>
+             <% if (isEquipped) { %>
+                <div class="equipped-badge" data-i18n="shop.equipped">EQUIPPED</div>
+             <% } else { %>
+                <button class="equip-btn" onclick="equipItem('<%= item._id %>')" data-i18n="shop.equip">EQUIP</button>
+             <% } %>
+          <% } %>
+        </div>
+    <% } %>
+
+    <div id="ships-tab" class="shop-grid">
+        <% items.filter(i => i.type === 'ship').forEach(item => { renderItemCard(item); }); %>
+    </div>
+
+    <div id="trails-tab" class="shop-grid hidden">
+        <% items.filter(i => i.type === 'trail').forEach(item => { renderItemCard(item); }); %>
+    </div>
+
+    <div id="skins-tab" class="shop-grid hidden">
+        <% items.filter(i => i.type === 'skin').forEach(item => { renderItemCard(item); }); %>
+    </div>
+
+    <div id="powerups-tab" class="shop-grid hidden">
+        <% items.filter(i => i.type === 'powerup').forEach(item => { renderItemCard(item); }); %>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    function switchShopTab(tab) {
+        // Update Buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if (btn.innerText.toLowerCase().includes(tab)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Update Views
+        document.querySelectorAll('.shop-grid').forEach(grid => {
+            grid.classList.add('hidden');
+        });
+        
+        const selectedGrid = document.getElementById(`${tab}-tab`);
+        if (selectedGrid) {
+            selectedGrid.classList.remove('hidden');
+        }
+    }
+
+    async function buyItem(itemId) {
+      try {
+        const res = await fetch('/api/shop/buy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          showToast(data.message);
+          // Update wallet UI
+          document.getElementById('wallet-coins').innerText = data.wallet.coins.toLocaleString();
+          document.getElementById('wallet-gems').innerText = data.wallet.gems.toLocaleString();
+          // Reload to update buttons (simple way)
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast(data.error || 'Purchase failed');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Server Error');
+      }
+    }
+
+    async function equipItem(itemId) {
+      try {
+        const res = await fetch('/api/shop/equip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          showToast(data.message);
+          setTimeout(() => location.reload(), 500);
+        } else {
+          showToast(data.error || 'Equip failed');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Server Error');
+      }
+    }
+
+    function showToast(message) {
+      const x = document.getElementById("toast");
+      x.innerText = message;
+      x.className = "show";
+      setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+    }
+
+    // --- Sprite Generation for Shop ---
+    const SpriteCache = {};
+
+    function createNeonSprite(color, radius, blur = 10, shape = 'circle') {
+        color = color.toLowerCase().trim();
+        const key = `${color}-${radius}-${blur}-${shape}`;
+        if (SpriteCache[key]) return SpriteCache[key];
+
+        const c = document.createElement('canvas');
+        const padding = blur * 2; 
+        const size = (radius + padding) * 2;
+        c.width = size;
+        c.height = size;
+        const ctx = c.getContext('2d');
+
+        const center = size / 2;
+        ctx.shadowBlur = blur;
+        ctx.shadowColor = color;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        
+        if (shape === 'square') {
+            const r = radius;
+            ctx.moveTo(center - r, center - r);
+            ctx.lineTo(center + r, center - r);
+            ctx.lineTo(center + r, center + r);
+            ctx.lineTo(center - r, center + r);
+            ctx.closePath();
+            ctx.rect(center - r/2, center - r*1.2, r, r*0.4);
+        } else if (shape === 'triangle') {
+            const r = radius * 1.3;
+            ctx.moveTo(center, center - r);
+            ctx.lineTo(center + r * 0.8, center + r);
+            ctx.lineTo(center, center + r * 0.5);
+            ctx.lineTo(center - r * 0.8, center + r);
+            ctx.closePath();
+        } else if (shape === 'interceptor') {
+            const r = radius * 1.2;
+            ctx.moveTo(center, center - r);
+            ctx.lineTo(center + r * 0.4, center - r * 0.2);
+            ctx.lineTo(center + r, center - r * 0.5);
+            ctx.lineTo(center + r * 0.6, center + r);
+            ctx.lineTo(center, center + r * 0.6);
+            ctx.lineTo(center - r * 0.6, center + r);
+            ctx.lineTo(center - r, center - r * 0.5);
+            ctx.lineTo(center - r * 0.4, center - r * 0.2);
+            ctx.closePath();
+        } else if (shape === 'bomber') {
+            const r = radius * 1.1;
+            ctx.moveTo(center, center - r);
+            ctx.lineTo(center + r * 0.8, center - r * 0.4);
+            ctx.lineTo(center + r, center + r * 0.6);
+            ctx.lineTo(center + r * 0.4, center + r);
+            ctx.lineTo(center - r * 0.4, center + r);
+            ctx.lineTo(center - r, center + r * 0.6);
+            ctx.lineTo(center - r * 0.8, center - r * 0.4);
+            ctx.closePath();
+        } else if (shape === 'stealth') {
+            const r = radius * 1.2;
+            ctx.moveTo(center, center - r);
+            ctx.lineTo(center + r * 0.5, center);
+            ctx.lineTo(center + r, center + r * 0.5);
+            ctx.lineTo(center + r * 0.2, center + r * 0.8);
+            ctx.lineTo(center, center + r * 0.4);
+            ctx.lineTo(center - r * 0.2, center + r * 0.8);
+            ctx.lineTo(center - r, center + r * 0.5);
+            ctx.lineTo(center - r * 0.5, center);
+            ctx.closePath();
+        } else {
+            const r = radius;
+            ctx.moveTo(center, center - r);
+            ctx.lineTo(center + r, center + r);
+            ctx.lineTo(center, center);
+            ctx.lineTo(center - r, center + r);
+            ctx.closePath();
+        }
+        
+        ctx.fill();
+        SpriteCache[key] = { image: c };
+        return SpriteCache[key];
+    }
+
+    // Render ship sprites on load
+    window.addEventListener('load', () => {
+        document.querySelectorAll('.item-image[data-type="ship"]').forEach(el => {
+            const color = el.dataset.color || '#fff';
+            const name = (el.dataset.name || '').toLowerCase();
+            let shape = 'circle';
+            
+            if (name.includes('tank')) shape = 'square';
+            else if (name.includes('speed')) shape = 'triangle';
+            else if (name.includes('interceptor')) shape = 'interceptor';
+            else if (name.includes('cruiser') || name.includes('bomber')) shape = 'bomber';
+            else if (name.includes('stealth')) shape = 'stealth';
+            
+            const spriteData = createNeonSprite(color, 30, 15, shape);
+            
+            el.innerHTML = ''; // Clear icon
+            const img = document.createElement('img');
+            img.src = spriteData.image.toDataURL();
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'contain';
+            el.appendChild(img);
+        });
+    });
+  </script>
+  <script src="/js/localization.js"></script>
+  <script src="/js/intro.js"></script>
+</body>
+</html>

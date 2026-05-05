@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-language me-2"></i>Dil Çevirileri</h1>
+</div>
+
+<div class="row">
+    <% translations.forEach(trans => { %>
+        <div class="col-md-4 mb-4">
+            <div class="card bg-dark text-white border-secondary h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 mb-3">
+                        <% if (trans.language === 'tr') { %>🇹🇷<% } else if (trans.language === 'en') { %>🇺🇸<% } else if (trans.language === 'de') { %>🇩🇪<% } else { %>🌐<% } %>
+                    </div>
+                    <h5 class="card-title text-uppercase"><%= trans.language %></h5>
+                    <p class="card-text text-muted small">
+                        Son Güncelleme: <%= new Date(trans.lastUpdated).toLocaleString('tr-TR') %><br>
+                        Anahtar Sayısı: <%= Object.keys(trans.data).length %>
+                    </p>
+                    <a href="/admin/translations/edit/<%= trans.language %>" class="btn btn-primary w-100">
+                        <i class="fas fa-edit me-1"></i> Düzenle
+                    </a>
+                </div>
+            </div>
+        </div>
+    <% }) %>
+</div>
+
+<%- include('partials/footer') %>

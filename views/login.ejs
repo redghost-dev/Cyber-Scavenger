@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#050510">
+    <title data-i18n="auth.login_title">Login - Cyber Scavenger</title>
+
+    <style>
+      html, body { background-color: #050510 !important; margin: 0; padding: 0; }
+      #cyber-intro {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050510;
+        z-index: 99999;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+      }
+    </style>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/intro.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="full-screen-overlay">
+    <%- include('partials/intro') %>
+    <%- include('partials/ux_effects') %>
+    <div class="auth-container">
+        <h1 class="auth-header" data-i18n="auth.login_title">SYSTEM LOGIN</h1>
+        
+        <% if(typeof message != 'undefined' && message.length > 0) { %>
+            <div class="alert"><%= message %></div>
+        <% } %>
+
+        <% if(typeof success_msg != 'undefined' && success_msg.length > 0) { %>
+            <div class="alert alert-success"><%= success_msg %></div>
+        <% } %>
+
+        <form action="/auth/login" method="POST">
+            <div class="form-group">
+                <label for="email" data-i18n="auth.email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password" data-i18n="auth.password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="cyber-btn" style="width: 100%;" data-i18n="auth.login_btn">ACCESS SYSTEM</button>
+        </form>
+
+        <div class="auth-divider" data-i18n="auth.divider">OR</div>
+
+        <a href="/auth/google" class="cyber-btn secondary" style="width: 100%; text-decoration: none;">
+            <i class="fab fa-google"></i> <span data-i18n="auth.google_login">Login with Google</span>
+        </a>
+
+        <div class="auth-footer">
+            <p><span data-i18n="auth.new_user">New User?</span> <a href="/auth/register" class="auth-link" data-i18n="auth.register_link">Initialize Registration</a></p>
+            <p><a href="/" class="auth-link" data-i18n="auth.return_main">Return to Main Menu</a></p>
+        </div>
+    </div>
+
+    <script src="/js/localization.js"></script>
+    <script src="/js/intro.js"></script>
+</body>
+</html>

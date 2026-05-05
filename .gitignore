@@ -1,0 +1,33 @@
+node_modules/
+.DS_Store
+*.log
+*.pid
+*.seed
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local runtime / backups
+server.log
+*.bak
+*.backup
+*.backup_*
+*.new
+
+# Build and admin artifacts
+.adminjs/
+
+# Sensitive signing files
+upload-keystore.jks
+*.jks
+
+# OS/editor noise
+.idea/
+.vscode/
+
+# Optional large local exports
+coverage/
+tmp/
+temp/

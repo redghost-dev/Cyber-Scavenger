@@ -1,0 +1,209 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0">Market Eşyaları</h5>
+    <a href="/admin/items/new" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i> Yeni Eşya Ekle
+    </a>
+</div>
+
+<% if (typeof req !== 'undefined' && (req.query.success || req.query.deleted)) { %>
+    <div class="alert alert-success bg-success bg-opacity-10 border-success text-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i> İşlem başarıyla tamamlandı!
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<!-- Kategori Filtreleme ve Arama -->
+<div class="row mb-4 g-3">
+    <div class="col-md-8">
+        <div class="nav nav-pills gap-2">
+            <a href="/admin/items?type=all<%= search ? '&search=' + search : '' %>" class="nav-link <%= currentType === 'all' ? 'active bg-primary' : 'bg-dark text-white border border-secondary' %>">
+                Hepsi <span class="badge bg-secondary ms-1"><%= typeCounts.all || 0 %></span>
+            </a>
+            <a href="/admin/items?type=ship<%= search ? '&search=' + search : '' %>" class="nav-link <%= currentType === 'ship' ? 'active bg-primary' : 'bg-dark text-white border border-secondary' %>">
+                Gemiler <span class="badge bg-secondary ms-1"><%= typeCounts.ship || 0 %></span>
+            </a>
+            <a href="/admin/items?type=skin<%= search ? '&search=' + search : '' %>" class="nav-link <%= currentType === 'skin' ? 'active bg-primary' : 'bg-dark text-white border border-secondary' %>">
+                Görünümler <span class="badge bg-secondary ms-1"><%= typeCounts.skin || 0 %></span>
+            </a>
+            <a href="/admin/items?type=trail<%= search ? '&search=' + search : '' %>" class="nav-link <%= currentType === 'trail' ? 'active bg-primary' : 'bg-dark text-white border border-secondary' %>">
+                İzler <span class="badge bg-secondary ms-1"><%= typeCounts.trail || 0 %></span>
+            </a>
+            <a href="/admin/items?type=powerup<%= search ? '&search=' + search : '' %>" class="nav-link <%= currentType === 'powerup' ? 'active bg-primary' : 'bg-dark text-white border border-secondary' %>">
+                Güçlendiriciler <span class="badge bg-secondary ms-1"><%= typeCounts.powerup || 0 %></span>
+            </a>
+            <a href="/admin/items?type=weapon<%= search ? '&search=' + search : '' %>" class="nav-link <%= currentType === 'weapon' ? 'active bg-primary' : 'bg-dark text-white border border-secondary' %>">
+                Silahlar <span class="badge bg-secondary ms-1"><%= typeCounts.weapon || 0 %></span>
+            </a>
+            <a href="/admin/items?type=avatar<%= search ? '&search=' + search : '' %>" class="nav-link <%= currentType === 'avatar' ? 'active bg-primary' : 'bg-dark text-white border border-secondary' %>">
+                Avatarlar <span class="badge bg-secondary ms-1"><%= typeCounts.avatar || 0 %></span>
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <form action="/admin/items" method="GET" class="d-flex">
+            <input type="hidden" name="type" value="<%= currentType %>">
+            <input type="text" name="search" class="form-control bg-dark border-secondary text-white me-2" placeholder="Eşya ara..." value="<%= search %>">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Resim</th>
+                        <th>Eşya Adı</th>
+                        <th>Tür</th>
+                        <th>Fiyat</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% items.forEach(item => { %>
+                    <tr>
+                        <td>
+                            <div class="item-preview" 
+                                 data-type="<%= item.type %>" 
+                                 data-color="<%= item.color %>" 
+                                 data-name="<%= item.name %>" 
+                                 data-image="<%= item.imageUrl %>">
+                                <img src="<%= item.imageUrl %>" alt="<%= item.name %>" width="40" height="40" class="rounded bg-dark border border-secondary">
+                            </div>
+                        </td>
+                        <td>
+                            <strong><%= item.name %></strong>
+                            <% if (item.isPremium) { %>
+                                <span class="badge bg-warning text-dark ms-1">PREMIUM</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary"><%= item.type.toUpperCase() %></span>
+                        </td>
+                        <td>
+                            <%= item.price %> 
+                            <small class="text-muted"><%= item.currencyType.toUpperCase() %></small>
+                        </td>
+                        <td>
+                            <% if (item.isActive) { %>
+                                <span class="badge bg-success">AKTİF</span>
+                            <% } else { %>
+                                <span class="badge bg-danger">PASİF</span>
+                            <% } %>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="/admin/items/edit/<%= item._id %>" class="btn btn-outline-info" title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="/admin/items/delete/<%= item._id %>" method="POST" class="d-inline" onsubmit="return confirm('Bu eşyayı silmek istediğinizden emin misiniz?')">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="submit" class="btn btn-outline-danger" title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }) %>
+                    <% if (items.length === 0) { %>
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">Henüz eşya eklenmemiş.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    function createNeonSprite(color, radius, blur = 10, shape = 'circle') {
+        const c = document.createElement('canvas');
+        const padding = blur * 2; 
+        const size = (radius + padding) * 2;
+        c.width = size;
+        c.height = size;
+        const ctx = c.getContext('2d');
+        const center = size / 2;
+        ctx.shadowBlur = blur;
+        ctx.shadowColor = color;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        
+        if (shape === 'square') {
+            const r = radius;
+            ctx.moveTo(center - r, center - r);
+            ctx.lineTo(center + r, center - r);
+            ctx.lineTo(center + r, center + r);
+            ctx.lineTo(center - r, center + r);
+            ctx.closePath();
+            ctx.rect(center - r/2, center - r*1.2, r, r*0.4);
+        } else if (shape === 'triangle') {
+            const r = radius * 1.3;
+            ctx.moveTo(center, center - r);
+            ctx.lineTo(center + r * 0.8, center + r);
+            ctx.lineTo(center, center + r * 0.5);
+            ctx.lineTo(center - r * 0.8, center + r);
+            ctx.closePath();
+        } else if (shape === 'interceptor') {
+            const r = radius * 1.2;
+            ctx.moveTo(center, center - r);
+            ctx.lineTo(center + r * 0.4, center - r * 0.2);
+            ctx.lineTo(center + r, center - r * 0.5);
+            ctx.lineTo(center + r * 0.6, center + r);
+            ctx.lineTo(center, center + r * 0.6);
+            ctx.lineTo(center - r * 0.6, center + r);
+            ctx.lineTo(center - r, center - r * 0.5);
+            ctx.lineTo(center - r * 0.4, center - r * 0.2);
+            ctx.closePath();
+        } else {
+            ctx.arc(center, center, radius, 0, Math.PI * 2);
+        }
+        ctx.fill();
+        return c;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.item-preview').forEach(container => {
+            const type = container.dataset.type;
+            const color = container.dataset.color || '#0f0';
+            const name = container.dataset.name.toLowerCase();
+            const imageUrl = container.dataset.image;
+
+            if (type === 'ship' || type === 'skin') {
+                let shape = 'circle';
+                if (name.includes('tank')) shape = 'square';
+                else if (name.includes('speed')) shape = 'triangle';
+                else if (name.includes('interceptor')) shape = 'interceptor';
+                
+                const canvas = createNeonSprite(color, 10, 5, shape);
+                container.innerHTML = '';
+                canvas.style.width = '40px';
+                canvas.style.height = '40px';
+                container.appendChild(canvas);
+            } else if (type === 'trail') {
+                container.innerHTML = `<div style="font-size: 20px; color: ${color}; text-shadow: 0 0 10px ${color}; text-align: center;"><i class="fas fa-wind"></i></div>`;
+            } else if (type === 'powerup') {
+                let icon = 'fa-bolt';
+                if (name.includes('magnet')) icon = 'fa-magnet';
+                else if (name.includes('xp')) icon = 'fa-angle-double-up';
+                else if (name.includes('health')) icon = 'fa-heart';
+                container.innerHTML = `<div style="font-size: 20px; color: #ffd700; text-shadow: 0 0 10px #ffd700; text-align: center;"><i class="fas ${icon}"></i></div>`;
+            } else if (imageUrl && imageUrl !== '/img/items/default.svg') {
+                // Keep the existing img tag
+            } else {
+                container.innerHTML = `<div style="font-size: 20px; color: ${color}; text-align: center;"><i class="fas fa-cube"></i></div>`;
+            }
+        });
+    });
+</script>

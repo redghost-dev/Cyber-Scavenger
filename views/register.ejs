@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#050510">
+    <title data-i18n="auth.register_title">Register - Cyber Scavenger</title>
+
+    <style>
+      html, body { background-color: #050510 !important; margin: 0; padding: 0; }
+      #cyber-intro {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050510;
+        z-index: 99999;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+      }
+    </style>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/intro.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="full-screen-overlay">
+    <%- include('partials/intro') %>
+    <%- include('partials/ux_effects') %>
+    <div class="auth-container">
+        <h1 class="auth-header" data-i18n="auth.register_title">NEW IDENTITY</h1>
+        
+        <% if(typeof errors != 'undefined') { %>
+            <% errors.forEach(function(error) { %>
+                <div class="alert"><%= error.msg %></div>
+            <% }); %>
+        <% } %>
+
+        <form action="/auth/register" method="POST" id="registerForm">
+            <div class="form-group">
+                <label for="username" data-i18n="auth.username">Codename (Username)</label>
+                <input type="text" id="username" name="username" class="form-control" value="<%= typeof username != 'undefined' ? username : '' %>" minlength="3" maxlength="20" required>
+                <small class="form-hint" data-i18n="auth.username_hint">3-20 characters</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" data-i18n="auth.email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" value="<%= typeof email != 'undefined' ? email : '' %>" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" data-i18n="auth.password">Security Code (Password)</label>
+                <input type="password" id="password" name="password" class="form-control" minlength="6" required>
+                <div id="password-strength" class="password-strength">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText"><span data-i18n="auth.password_strength">Security Level</span>: <span id="strengthLevel" data-i18n="auth.strength.unknown">Unknown</span></span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword" data-i18n="auth.confirm_password">Confirm Security Code</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" minlength="6" required>
+                <small class="password-match-hint" id="passwordMatchHint"></small>
+            </div>
+            
+            <div class="form-group">
+                <label for="avatarColor" data-i18n="auth.avatar_color">Avatar Theme Color</label>
+                <select id="avatarColor" name="avatarColor" class="form-control">
+                    <option value="cyan" data-i18n="auth.color.cyan">Cyber Blue (Cyan)</option>
+                    <option value="pink" data-i18n="auth.color.pink">Neon Pink</option>
+                    <option value="purple" data-i18n="auth.color.purple">Toxic Violet</option>
+                    <option value="green" data-i18n="auth.color.green">Matrix Green</option>
+                    <option value="orange" data-i18n="auth.color.orange">Energy Orange</option>
+                    <option value="red" data-i18n="auth.color.red">Alarm Red</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="countryCode" data-i18n="auth.country">Country / Region</label>
+                <select id="countryCode" name="countryCode" class="form-control">
+                    <option value="TR" data-i18n="country.tr">Turkey</option>
+                    <option value="AF" data-i18n="country.af">Afghanistan</option>
+                    <option value="AL" data-i18n="country.al">Albania</option>
+                    <option value="DZ" data-i18n="country.dz">Algeria</option>
+                    <option value="AD" data-i18n="country.ad">Andorra</option>
+                    <option value="AO" data-i18n="country.ao">Angola</option>
+                    <option value="AR" data-i18n="country.ar">Argentina</option>
+                    <option value="AM" data-i18n="country.am">Armenia</option>
+                    <option value="AU" data-i18n="country.au">Australia</option>
+                    <option value="AT" data-i18n="country.at">Austria</option>
+                    <option value="AZ" data-i18n="country.az">Azerbaijan</option>
+                    <option value="BS" data-i18n="country.bs">Bahamas</option>
+                    <option value="BH" data-i18n="country.bh">Bahrain</option>
+                    <option value="BD" data-i18n="country.bd">Bangladesh</option>
+                    <option value="BB" data-i18n="country.bb">Barbados</option>
+                    <option value="BY" data-i18n="country.by">Belarus</option>
+                    <option value="BE" data-i18n="country.be">Belgium</option>
+                    <option value="BZ" data-i18n="country.bz">Belize</option>
+                    <option value="BJ" data-i18n="country.bj">Benin</option>
+                    <option value="BT" data-i18n="country.bt">Bhutan</option>
+                    <option value="BO" data-i18n="country.bo">Bolivia</option>
+                    <option value="BA" data-i18n="country.ba">Bosnia and Herzegovina</option>
+                    <option value="BW" data-i18n="country.bw">Botswana</option>
+                    <option value="BR" data-i18n="country.br">Brazil</option>
+                    <option value="BN" data-i18n="country.bn">Brunei</option>
+                    <option value="BG" data-i18n="country.bg">Bulgaria</option>
+                    <option value="BF" data-i18n="country.bf">Burkina Faso</option>
+                    <option value="KH" data-i18n="country.kh">Cambodia</option>
+                    <option value="CM" data-i18n="country.cm">Cameroon</option>
+                    <option value="CA" data-i18n="country.ca">Canada</option>
+                    <option value="CV" data-i18n="country.cv">Cape Verde</option>
+                    <option value="TD" data-i18n="country.td">Chad</option>
+                    <option value="CL" data-i18n="country.cl">Chile</option>
+                    <option value="CN" data-i18n="country.cn">China</option>
+                    <option value="CO" data-i18n="country.co">Colombia</option>
+                    <option value="CR" data-i18n="country.cr">Costa Rica</option>
+                    <option value="HR" data-i18n="country.hr">Croatia</option>
+                    <option value="CU" data-i18n="country.cu">Cuba</option>
+                    <option value="CY" data-i18n="country.cy">Cyprus</option>
+                    <option value="CZ" data-i18n="country.cz">Czech Republic</option>
+                    <option value="CD" data-i18n="country.cd">Democratic Republic of the Congo</option>
+                    <option value="DK" data-i18n="country.dk">Denmark</option>
+                    <option value="DJ" data-i18n="country.dj">Djibouti</option>
+                    <option value="DO" data-i18n="country.do">Dominican Republic</option>
+                    <option value="EC" data-i18n="country.ec">Ecuador</option>
+                    <option value="EG" data-i18n="country.eg">Egypt</option>
+                    <option value="SV" data-i18n="country.sv">El Salvador</option>
+                    <option value="ER" data-i18n="country.er">Eritrea</option>
+                    <option value="EE" data-i18n="country.ee">Estonia</option>
+                    <option value="ET" data-i18n="country.et">Ethiopia</option>
+                    <option value="FI" data-i18n="country.fi">Finland</option>
+                    <option value="FR" data-i18n="country.fr">France</option>
+                    <option value="GA" data-i18n="country.ga">Gabon</option>
+                    <option value="GE" data-i18n="country.ge">Georgia</option>
+                    <option value="DE" data-i18n="country.de">Germany</option>
+                    <option value="GH" data-i18n="country.gh">Ghana</option>
+                    <option value="GR" data-i18n="country.gr">Greece</option>
+                    <option value="GT" data-i18n="country.gt">Guatemala</option>
+                    <option value="GY" data-i18n="country.gy">Guyana</option>
+                    <option value="HT" data-i18n="country.ht">Haiti</option>
+                    <option value="HN" data-i18n="country.hn">Honduras</option>
+                    <option value="HK" data-i18n="country.hk">Hong Kong</option>
+                    <option value="HU" data-i18n="country.hu">Hungary</option>
+                    <option value="IS" data-i18n="country.is">Iceland</option>
+                    <option value="IN" data-i18n="country.in">India</option>
+                    <option value="ID" data-i18n="country.id">Indonesia</option>
+                    <option value="IR" data-i18n="country.ir">Iran</option>
+                    <option value="IQ" data-i18n="country.iq">Iraq</option>
+                    <option value="IE" data-i18n="country.ie">Ireland</option>
+                    <option value="IL" data-i18n="country.il">Israel</option>
+                    <option value="IT" data-i18n="country.it">Italy</option>
+                    <option value="CI" data-i18n="country.ci">Ivory Coast</option>
+                    <option value="JM" data-i18n="country.jm">Jamaica</option>
+                    <option value="JP" data-i18n="country.jp">Japan</option>
+                    <option value="JO" data-i18n="country.jo">Jordan</option>
+                    <option value="KZ" data-i18n="country.kz">Kazakhstan</option>
+                    <option value="KE" data-i18n="country.ke">Kenya</option>
+                    <option value="XK" data-i18n="country.xk">Kosovo</option>
+                    <option value="KW" data-i18n="country.kw">Kuwait</option>
+                    <option value="KG" data-i18n="country.kg">Kyrgyzstan</option>
+                    <option value="LA" data-i18n="country.la">Laos</option>
+                    <option value="LV" data-i18n="country.lv">Latvia</option>
+                    <option value="LB" data-i18n="country.lb">Lebanon</option>
+                    <option value="LY" data-i18n="country.ly">Libya</option>
+                    <option value="LI" data-i18n="country.li">Liechtenstein</option>
+                    <option value="LT" data-i18n="country.lt">Lithuania</option>
+                    <option value="LU" data-i18n="country.lu">Luxembourg</option>
+                    <option value="MO" data-i18n="country.mo">Macao</option>
+                    <option value="MG" data-i18n="country.mg">Madagascar</option>
+                    <option value="MY" data-i18n="country.my">Malaysia</option>
+                    <option value="MV" data-i18n="country.mv">Maldives</option>
+                    <option value="ML" data-i18n="country.ml">Mali</option>
+                    <option value="MT" data-i18n="country.mt">Malta</option>
+                    <option value="MU" data-i18n="country.mu">Mauritius</option>
+                    <option value="MX" data-i18n="country.mx">Mexico</option>
+                    <option value="MD" data-i18n="country.md">Moldova</option>
+                    <option value="MC" data-i18n="country.mc">Monaco</option>
+                    <option value="MN" data-i18n="country.mn">Mongolia</option>
+                    <option value="ME" data-i18n="country.me">Montenegro</option>
+                    <option value="MA" data-i18n="country.ma">Morocco</option>
+                    <option value="MM" data-i18n="country.mm">Myanmar</option>
+                    <option value="NA" data-i18n="country.na">Namibia</option>
+                    <option value="NP" data-i18n="country.np">Nepal</option>
+                    <option value="NL" data-i18n="country.nl">Netherlands</option>
+                    <option value="NZ" data-i18n="country.nz">New Zealand</option>
+                    <option value="NI" data-i18n="country.ni">Nicaragua</option>
+                    <option value="NE" data-i18n="country.ne">Niger</option>
+                    <option value="NG" data-i18n="country.ng">Nigeria</option>
+                    <option value="KP" data-i18n="country.kp">North Korea</option>
+                    <option value="MK" data-i18n="country.mk">North Macedonia</option>
+                    <option value="NO" data-i18n="country.no">Norway</option>
+                    <option value="OM" data-i18n="country.om">Oman</option>
+                    <option value="PK" data-i18n="country.pk">Pakistan</option>
+                    <option value="PA" data-i18n="country.pa">Panama</option>
+                    <option value="PY" data-i18n="country.py">Paraguay</option>
+                    <option value="PE" data-i18n="country.pe">Peru</option>
+                    <option value="PH" data-i18n="country.ph">Philippines</option>
+                    <option value="PL" data-i18n="country.pl">Poland</option>
+                    <option value="PT" data-i18n="country.pt">Portugal</option>
+                    <option value="PR" data-i18n="country.pr">Puerto Rico</option>
+                    <option value="QA" data-i18n="country.qa">Qatar</option>
+                    <option value="CG" data-i18n="country.cg">Republic of the Congo</option>
+                    <option value="RO" data-i18n="country.ro">Romania</option>
+                    <option value="RU" data-i18n="country.ru">Russia</option>
+                    <option value="RW" data-i18n="country.rw">Rwanda</option>
+                    <option value="SM" data-i18n="country.sm">San Marino</option>
+                    <option value="SA" data-i18n="country.sa">Saudi Arabia</option>
+                    <option value="SN" data-i18n="country.sn">Senegal</option>
+                    <option value="RS" data-i18n="country.rs">Serbia</option>
+                    <option value="SC" data-i18n="country.sc">Seychelles</option>
+                    <option value="SG" data-i18n="country.sg">Singapore</option>
+                    <option value="SK" data-i18n="country.sk">Slovakia</option>
+                    <option value="SI" data-i18n="country.si">Slovenia</option>
+                    <option value="SO" data-i18n="country.so">Somalia</option>
+                    <option value="ZA" data-i18n="country.za">South Africa</option>
+                    <option value="KR" data-i18n="country.kr">South Korea</option>
+                    <option value="ES" data-i18n="country.es">Spain</option>
+                    <option value="LK" data-i18n="country.lk">Sri Lanka</option>
+                    <option value="SD" data-i18n="country.sd">Sudan</option>
+                    <option value="SR" data-i18n="country.sr">Suriname</option>
+                    <option value="SE" data-i18n="country.se">Sweden</option>
+                    <option value="CH" data-i18n="country.ch">Switzerland</option>
+                    <option value="SY" data-i18n="country.sy">Syria</option>
+                    <option value="TW" data-i18n="country.tw">Taiwan</option>
+                    <option value="TJ" data-i18n="country.tj">Tajikistan</option>
+                    <option value="TZ" data-i18n="country.tz">Tanzania</option>
+                    <option value="TH" data-i18n="country.th">Thailand</option>
+                    <option value="TL" data-i18n="country.tl">Timor-Leste</option>
+                    <option value="TG" data-i18n="country.tg">Togo</option>
+                    <option value="TT" data-i18n="country.tt">Trinidad and Tobago</option>
+                    <option value="TN" data-i18n="country.tn">Tunisia</option>
+                    <option value="TM" data-i18n="country.tm">Turkmenistan</option>
+                    <option value="UG" data-i18n="country.ug">Uganda</option>
+                    <option value="UA" data-i18n="country.ua">Ukraine</option>
+                    <option value="AE" data-i18n="country.ae">United Arab Emirates</option>
+                    <option value="GB" data-i18n="country.gb">United Kingdom</option>
+                    <option value="UN" data-i18n="country.un">United Nations</option>
+                    <option value="US" data-i18n="country.us">United States</option>
+                    <option value="UY" data-i18n="country.uy">Uruguay</option>
+                    <option value="UZ" data-i18n="country.uz">Uzbekistan</option>
+                    <option value="VE" data-i18n="country.ve">Venezuela</option>
+                    <option value="VN" data-i18n="country.vn">Vietnam</option>
+                    <option value="YE" data-i18n="country.ye">Yemen</option>
+                    <option value="ZM" data-i18n="country.zm">Zambia</option>
+                    <option value="ZW" data-i18n="country.zw">Zimbabwe</option>
+                </select>
+            </div>
+            
+            <!-- CAPTCHA - Slider Puzzle -->
+            <div class="form-group">
+                <label for="captcha" data-i18n="auth.captcha.label">Security Verification</label>
+                <div class="slider-captcha-container">
+                    <div class="captcha-instruction" data-i18n="auth.captcha.instruction">Complete the piece by sliding</div>
+                    <div class="captcha-canvas-wrapper">
+                        <canvas id="captchaCanvas" width="300" height="150"></canvas>
+                        <canvas id="captchaPiece" class="captcha-piece"></canvas>
+                    </div>
+                    <div class="slider-track">
+                        <div class="slider-button" id="sliderButton">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+                        <div class="slider-progress" id="sliderProgress"></div>
+                    </div>
+                    <div class="captcha-status" id="captchaStatus"></div>
+                    <button type="button" class="captcha-refresh" id="refreshCaptcha" data-i18n="auth.captcha.refresh" title="New puzzle">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <input type="hidden" id="captcha" name="captcha">
+                <input type="hidden" id="captchaAnswer" name="captchaAnswer">
+                <input type="hidden" id="captchaTiming" name="captchaTiming">
+                <input type="hidden" id="captchaMovements" name="captchaMovements">
+            </div>
+            
+            <!-- Agreements -->
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                    <label for="agreeTerms" class="checkbox-label">
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-text">
+                            <span data-i18n="auth.terms.agree_prefix"></span>
+                            <a href="#" id="openTermsModal" class="auth-link" data-i18n="auth.terms.link">User Agreement</a>
+                            <span data-i18n="auth.terms.agree_suffix"></span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="emailNotifications" name="emailNotifications">
+                    <label for="emailNotifications" class="checkbox-label">
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-text" data-i18n="auth.notifications.email">
+                            I want to receive email notifications for game updates and announcements
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="cyber-btn" id="submitBtn" style="width: 100%;" data-i18n="auth.register_btn" disabled>INITIALIZE REGISTRATION</button>
+        </form>
+
+        <div class="auth-footer">
+            <p><span data-i18n="auth.has_account">Already have credentials?</span> <a href="/auth/login" class="auth-link" data-i18n="auth.login_link">Access System</a></p>
+            <p><a href="/" class="auth-link" data-i18n="auth.return_main">Return to Main Menu</a></p>
+        </div>
+    </div>
+
+    <!-- Terms Modal (Moved outside auth-container to avoid backdrop-filter/clip-path issues) -->
+    <div class="terms-modal" id="termsModal">
+        <div class="terms-modal-content">
+            <div class="terms-modal-header">
+                <h2 data-i18n="auth.terms.modal_title">USER AGREEMENT</h2>
+                <button class="terms-close" id="closeTermsModal" data-i18n="auth.terms.close">&times;</button>
+            </div>
+            <div class="terms-modal-body" id="termsModalBody">
+                <!-- Sections will be injected dynamically by JavaScript -->
+                <div id="dynamicTermsContent"></div>
+                
+                <p class="terms-updated" data-i18n="auth.terms.last_updated">Last updated: January 2026</p>
+            </div>
+            <div class="terms-modal-footer">
+                <button class="cyber-btn" id="acceptTermsBtn" data-i18n="auth.terms.accept">I read and accept</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/localization.js"></script>
+    <script src="/js/intro.js"></script>
+    <script>
+        // Custom Dynamic Terms Rendering
+        function renderDynamicTerms() {
+            const container = document.getElementById('dynamicTermsContent');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            let i = 1;
+            
+            // Wait for translations if not yet loaded
+            const currentLang = Loc.currentLang;
+            const dict = Loc.translations[currentLang] || {};
+            
+            while (dict[`auth.terms.h${i}`]) {
+                const header = document.createElement('h3');
+                header.setAttribute('data-i18n', `auth.terms.h${i}`);
+                header.innerText = dict[`auth.terms.h${i}`];
+                
+                const paragraph = document.createElement('p');
+                paragraph.setAttribute('data-i18n', `auth.terms.p${i}`);
+                paragraph.innerText = dict[`auth.terms.p${i}`] || '';
+                
+                container.appendChild(header);
+                container.appendChild(paragraph);
+                i++;
+            }
+        }
+
+        // Override applyTranslations to also handle our dynamic terms
+        const originalApplyTranslations = Loc.applyTranslations.bind(Loc);
+        Loc.applyTranslations = function() {
+            renderDynamicTerms();
+            originalApplyTranslations();
+        };
+
+        // Slider CAPTCHA System
+        const canvas = document.getElementById('captchaCanvas');
+        const pieceCanvas = document.getElementById('captchaPiece');
+        const ctx = canvas.getContext('2d');
+        const pieceCtx = pieceCanvas.getContext('2d');
+        const sliderButton = document.getElementById('sliderButton');
+        const sliderProgress = document.getElementById('sliderProgress');
+        const captchaStatus = document.getElementById('captchaStatus');
+        
+        let captchaData = {
+            targetX: 0,
+            pieceSize: 50,
+            isDragging: false,
+            startTime: 0,
+            movements: 0,
+            startX: 0,
+            success: false
+        };
+        
+        function generateCaptcha() {
+            // Reset
+            captchaData.success = false;
+            captchaData.movements = 0;
+            captchaData.startTime = Date.now();
+            captchaStatus.textContent = '';
+            captchaStatus.className = 'captcha-status';
+            sliderButton.style.left = '0px';
+            sliderProgress.style.width = '0px';
+            
+            // Set canvas dimensions
+            canvas.width = 300;
+            canvas.height = 150;
+            
+            // Random target position (avoid edges)
+            captchaData.targetX = 50 + Math.random() * (canvas.width - captchaData.pieceSize - 100);
+            
+            // Draw background with cyber grid
+            ctx.fillStyle = 'rgba(0, 10, 20, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid pattern
+            ctx.strokeStyle = 'rgba(0, 251, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for(let i = 0; i < canvas.width; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for(let i = 0; i < canvas.height; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+            
+            // Draw target slot with glow
+            const slotY = (canvas.height - captchaData.pieceSize) / 2;
+            ctx.strokeStyle = '#00fbff';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#00fbff';
+            ctx.shadowBlur = 15;
+            ctx.strokeRect(captchaData.targetX, slotY, captchaData.pieceSize, captchaData.pieceSize);
+            ctx.shadowBlur = 0;
+            
+            // Draw puzzle piece on separate canvas
+            const canvasRect = canvas.getBoundingClientRect();
+            pieceCanvas.width = captchaData.pieceSize + 10;
+            pieceCanvas.height = captchaData.pieceSize + 10;
+            pieceCanvas.style.position = 'absolute';
+            pieceCanvas.style.top = slotY + 'px';
+            pieceCanvas.style.left = '5px';
+            pieceCanvas.style.zIndex = '10';
+            
+            // Draw piece with cyber style
+            const gradient = pieceCtx.createLinearGradient(0, 0, captchaData.pieceSize, captchaData.pieceSize);
+            gradient.addColorStop(0, '#00fbff');
+            gradient.addColorStop(1, '#ff0055');
+            
+            pieceCtx.fillStyle = gradient;
+            pieceCtx.strokeStyle = '#fff';
+            pieceCtx.lineWidth = 2;
+            pieceCtx.shadowColor = '#00fbff';
+            pieceCtx.shadowBlur = 10;
+            
+            // Simple square piece with notch
+            pieceCtx.beginPath();
+            pieceCtx.moveTo(5, 5);
+            pieceCtx.lineTo(captchaData.pieceSize, 5);
+            pieceCtx.lineTo(captchaData.pieceSize, captchaData.pieceSize);
+            pieceCtx.lineTo(5, captchaData.pieceSize);
+            pieceCtx.closePath();
+            pieceCtx.fill();
+            pieceCtx.stroke();
+            
+            // Store answer
+            document.getElementById('captchaAnswer').value = Math.round(captchaData.targetX);
+        }
+        
+        // Slider drag handlers with better Chrome compatibility
+        function startDrag(e) {
+            if (e.type === 'mousedown' && e.button !== 0) return; // Only left click
+            e.preventDefault();
+            e.stopPropagation();
+            
+            captchaData.isDragging = true;
+            captchaData.startTime = Date.now();
+            captchaData.movements = 0;
+            
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const buttonRect = sliderButton.getBoundingClientRect();
+            captchaData.startX = clientX - buttonRect.left;
+            
+            sliderButton.style.cursor = 'grabbing';
+            document.body.style.userSelect = 'none';
+        }
+        
+        function drag(e) {
+            if (!captchaData.isDragging) return;
+            
+            captchaData.movements++;
+            
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const sliderTrack = document.querySelector('.slider-track');
+            const maxMove = sliderTrack.offsetWidth - sliderButton.offsetWidth;
+            
+            let newX = clientX - sliderTrack.getBoundingClientRect().left - captchaData.startX;
+            newX = Math.max(0, Math.min(newX, maxMove));
+            
+            sliderButton.style.left = newX + 'px';
+            sliderProgress.style.width = newX + 'px';
+            
+            // Move piece - scale to canvas width
+            const canvasScale = canvas.width / sliderTrack.offsetWidth;
+            const pieceX = newX * canvasScale;
+            pieceCanvas.style.left = (5 + pieceX) + 'px';
+        }
+        
+        function endDrag(e) {
+            if (!captchaData.isDragging) return;
+            captchaData.isDragging = false;
+            sliderButton.style.cursor = 'grab';
+            document.body.style.userSelect = '';
+            
+            const timeElapsed = (Date.now() - captchaData.startTime) / 1000;
+            const sliderX = parseInt(sliderButton.style.left) || 0;
+            const sliderTrack = document.querySelector('.slider-track');
+            const canvasScale = canvas.width / sliderTrack.offsetWidth;
+            const actualX = Math.round(sliderX * canvasScale);
+            const tolerance = 20;
+            
+            // Store actual canvas position, timing and movement data
+            document.getElementById('captcha').value = actualX;
+            document.getElementById('captchaTiming').value = timeElapsed.toFixed(2);
+            document.getElementById('captchaMovements').value = captchaData.movements;
+            
+            // Check if position matches
+            if (Math.abs(actualX - captchaData.targetX) <= tolerance) {
+                // Success checks
+                if (timeElapsed < 0.2) {
+                    captchaStatus.textContent = Loc.t('auth.captcha.too_fast');
+                    captchaStatus.className = 'captcha-status error';
+                    setTimeout(generateCaptcha, 2000);
+                    return;
+                }
+                
+                if (captchaData.movements < 2) {
+                    captchaStatus.textContent = Loc.t('auth.captcha.only_slide');
+                    captchaStatus.className = 'captcha-status error';
+                    setTimeout(generateCaptcha, 2000);
+                    return;
+                }
+                
+                // Success!
+                captchaData.success = true;
+                captchaStatus.textContent = Loc.t('auth.captcha.success');
+                captchaStatus.className = 'captcha-status success';
+                sliderButton.style.background = 'linear-gradient(135deg, #00ff88, #00fbff)';
+                sliderProgress.style.background = 'linear-gradient(90deg, #00ff88, #00fbff)';
+                checkFormValidity();
+            } else {
+                const diff = Math.abs(actualX - captchaData.targetX);
+                if (diff < 30) {
+                    captchaStatus.textContent = Loc.t('auth.captcha.almost');
+                } else {
+                    captchaStatus.textContent = Loc.t('auth.captcha.inside_box');
+                }
+                captchaStatus.className = 'captcha-status error';
+                setTimeout(generateCaptcha, 2000);
+            }
+        }
+        
+        // Event listeners with better cross-browser support
+        sliderButton.addEventListener('mousedown', startDrag, false);
+        sliderButton.addEventListener('touchstart', startDrag, { passive: false });
+        
+        // Document-level move and end events
+        document.addEventListener('mousemove', drag, false);
+        document.addEventListener('mouseup', endDrag, false);
+        document.addEventListener('touchmove', drag, { passive: false });
+        document.addEventListener('touchend', endDrag, false);
+        
+        // Prevent context menu on slider button
+        sliderButton.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        document.getElementById('refreshCaptcha').addEventListener('click', generateCaptcha);
+        
+        // Terms Modal
+        const termsModal = document.getElementById('termsModal');
+        const openTermsBtn = document.getElementById('openTermsModal');
+        const closeTermsBtn = document.getElementById('closeTermsModal');
+        const acceptTermsBtn = document.getElementById('acceptTermsBtn');
+        
+        openTermsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            termsModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeTermsBtn.addEventListener('click', () => {
+            termsModal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+        
+        acceptTermsBtn.addEventListener('click', () => {
+            agreeTerms.checked = true;
+            termsModal.style.display = 'none';
+            document.body.style.overflow = '';
+            checkTerms();
+        });
+        
+        // Close on outside click
+        termsModal.addEventListener('click', (e) => {
+            if (e.target === termsModal) {
+                termsModal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Generate initial captcha
+        generateCaptcha();
+        
+        // Password Strength Checker
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthLevel = document.getElementById('strengthLevel');
+        const passwordMatchHint = document.getElementById('passwordMatchHint');
+        const submitBtn = document.getElementById('submitBtn');
+        const agreeTerms = document.getElementById('agreeTerms');
+        const captchaInput = document.getElementById('captcha');
+        
+        let passwordStrength = 0;
+        let passwordsMatch = false;
+        let captchaValid = false;
+        let termsAccepted = false;
+        
+        function checkPasswordStrength(pass) {
+            let strength = 0;
+            
+            if(pass.length >= 6) strength += 1;
+            if(pass.length >= 10) strength += 1;
+            if(/[a-z]/.test(pass)) strength += 1;
+            if(/[A-Z]/.test(pass)) strength += 1;
+            if(/[0-9]/.test(pass)) strength += 1;
+            if(/[^a-zA-Z0-9]/.test(pass)) strength += 1;
+            
+            return strength;
+        }
+        
+        function updatePasswordStrength() {
+            const pass = password.value;
+            passwordStrength = checkPasswordStrength(pass);
+            
+            const widthPercent = (passwordStrength / 6) * 100;
+            strengthFill.style.width = widthPercent + '%';
+            
+            let levelText = Loc.t('auth.strength.unknown');
+            let colorClass = 'weak';
+            
+            if(passwordStrength === 0) {
+                levelText = Loc.t('auth.strength.unknown');
+                colorClass = 'weak';
+            } else if(passwordStrength <= 2) {
+                levelText = Loc.t('auth.strength.weak');
+                colorClass = 'weak';
+            } else if(passwordStrength <= 4) {
+                levelText = Loc.t('auth.strength.medium');
+                colorClass = 'medium';
+            } else if(passwordStrength === 5) {
+                levelText = Loc.t('auth.strength.strong');
+                colorClass = 'strong';
+            } else {
+                levelText = Loc.t('auth.strength.legendary');
+                colorClass = 'legendary';
+            }
+            
+            strengthLevel.textContent = levelText;
+            strengthFill.className = 'strength-fill ' + colorClass;
+            
+            checkFormValidity();
+        }
+        
+        function checkPasswordMatch() {
+            const pass = password.value;
+            const confirmPass = confirmPassword.value;
+            
+            if(confirmPass.length === 0) {
+                passwordMatchHint.textContent = '';
+                passwordMatchHint.className = 'password-match-hint';
+                passwordsMatch = false;
+            } else if(pass === confirmPass) {
+                passwordMatchHint.textContent = Loc.t('auth.password.match');
+                passwordMatchHint.className = 'password-match-hint match';
+                passwordsMatch = true;
+            } else {
+                passwordMatchHint.textContent = Loc.t('auth.password.no_match');
+                passwordMatchHint.className = 'password-match-hint no-match';
+                passwordsMatch = false;
+            }
+            
+            checkFormValidity();
+        }
+        
+        function checkTerms() {
+            termsAccepted = agreeTerms.checked;
+            checkFormValidity();
+        }
+        
+        function checkFormValidity() {
+            // En az orta seviye şifre, şifrelerin eşleşmesi, captcha ve sözleşme onayı gerekli
+            if(passwordStrength >= 3 && passwordsMatch && captchaData.success && termsAccepted) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+            }
+        }
+        
+        password.addEventListener('input', updatePasswordStrength);
+        password.addEventListener('input', checkPasswordMatch);
+        confirmPassword.addEventListener('input', checkPasswordMatch);
+        agreeTerms.addEventListener('change', checkTerms);
+        
+        // Form submission validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            if(passwordStrength < 3) {
+                e.preventDefault();
+                alert(Loc.t('auth.alert.weak_pass'));
+                return false;
+            }
+            if(!passwordsMatch) {
+                e.preventDefault();
+                alert(Loc.t('auth.alert.no_match'));
+                return false;
+            }
+            if(!captchaData.success) {
+                e.preventDefault();
+                alert(Loc.t('auth.alert.captcha'));
+                return false;
+            }
+            if(!termsAccepted) {
+                e.preventDefault();
+                alert(Loc.t('auth.alert.terms'));
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

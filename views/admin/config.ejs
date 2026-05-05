@@ -1,0 +1,550 @@
+<%- include('partials/header') %>
+
+<% if (typeof success !== 'undefined' || (typeof req !== 'undefined' && req.query.success)) { %>
+    <div class="alert alert-success bg-success bg-opacity-10 border-success text-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i> Ayarlar başarıyla güncellendi!
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<form action="/admin/config" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="row g-4">
+        <!-- Oynanış Ayarları -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-transparent border-secondary">
+                    <h5 class="mb-0"><i class="fas fa-gamepad me-2 text-primary"></i> Oynanış Ayarları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Düşman Can Çarpanı 
+                            <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Düşmanların can puanını bu değerle çarpar. 2.0 yaparsanız düşmanlar 2 kat daha zor ölür."></i>
+                        </label>
+                        <input type="number" step="0.1" name="enemyHealthMultiplier" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.enemyHealthMultiplier %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            XP Kazanım Oranı
+                            <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Oyuncunun kazandığı XP miktarını çarpar. Hızlı seviye atlamasını istiyorsanız yükseltin."></i>
+                        </label>
+                        <input type="number" step="0.1" name="xpRate" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.xpRate %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Coin Düşme Oranı
+                            <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Düşman öldüğünde ödül (Süper Orb veya Coin) düşme şansıdır. 0.1 = %10 şans."></i>
+                        </label>
+                        <input type="number" step="0.1" name="coinDropRate" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.coinDropRate %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Coin Başına Kazanılan
+                            <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Yerden alınan her bir gümüş/altın para oyuncuya kaç coin verir?"></i>
+                        </label>
+                        <input type="number" name="coinsPerPickup" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.coinsPerPickup %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Maksimum Seviye
+                            <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Oyuncunun ulaşabileceği en yüksek seviye sınırı."></i>
+                        </label>
+                        <input type="number" name="maxLevel" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.maxLevel %>" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boss Çıkış Ayarları -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-transparent border-secondary">
+                    <h5 class="mb-0"><i class="fas fa-skull me-2 text-danger"></i> Boss Çıkış Ayarları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            İlk Boss Puanı
+                            <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="İlk boss oyunun kaçıncı puanında çıkacak?"></i>
+                        </label>
+                        <input type="number" name="bossInitialScore" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.bossInitialScore !== undefined ? config.gameplay.bossInitialScore : 5000 %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Boss Arası Kill Sayısı
+                            <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Bir boss öldükten sonra diğerinin gelmesi için kaç düşman öldürülmeli?"></i>
+                        </label>
+                        <input type="number" name="bossKillThreshold" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.bossKillThreshold !== undefined ? config.gameplay.bossKillThreshold : 100 %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Boss Puan Artış Yüzdesi (%)
+                            <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Her boss öldükten sonra bir sonraki boss yüzde kaç daha yüksek puanda çıkar?"></i>
+                        </label>
+                        <input type="number" step="1" name="bossScoreIncreasePercent" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.bossScoreIncreasePercent !== undefined ? config.gameplay.bossScoreIncreasePercent : 20 %>" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ekonomi ve Denge Ayarları -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-transparent border-secondary">
+                    <h5 class="mb-0"><i class="fas fa-coins me-2 text-warning"></i> Ekonomi ve Puanlama</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Normal Orb Puanı
+                                <i class="fas fa-info-circle ms-1 text-warning" data-bs-toggle="tooltip" title="Normal küçük orbların verdiği baz puan."></i>
+                            </label>
+                            <input type="number" name="baseOrbScore" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.baseOrbScore %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Süper Orb Puanı
+                                <i class="fas fa-info-circle ms-1 text-warning" data-bs-toggle="tooltip" title="Gümüş Nova orbların verdiği baz puan (Daha yüksektir)."></i>
+                            </label>
+                            <input type="number" name="superOrbScore" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.superOrbScore %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Temel Kill Puanı
+                                <i class="fas fa-info-circle ms-1 text-warning" data-bs-toggle="tooltip" title="Bir düşman yok edildiğinde kazanılan baz puan."></i>
+                            </label>
+                            <input type="number" name="baseKillScore" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.baseKillScore %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Kombo Sınırı (Cap)
+                                <i class="fas fa-info-circle ms-1 text-warning" data-bs-toggle="tooltip" title="Max kaç kata kadar kombo çarpanı olabilir?"></i>
+                            </label>
+                            <input type="number" name="comboCap" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.comboCap %>">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted small">
+                                Kombo Zaman Aşımı (ms)
+                                <i class="fas fa-info-circle ms-1 text-warning" data-bs-toggle="tooltip" title="Yeni bir skor almazsa kombo kaç milisaniye içinde sıfırlanır?"></i>
+                            </label>
+                            <input type="number" name="comboDecayTime" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.comboDecayTime %>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mekanik ve Zorluk Ölçeklendirme -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-transparent border-secondary">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2 text-danger"></i> Zorluk ve Ölçeklendirme</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Level Atlatma Çarpanı
+                                <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Her yeni seviye için gereken XP artış hızı. 1.2 = Bir sonraki %20 daha zordur."></i>
+                            </label>
+                            <input type="number" step="0.01" name="baseLevelUpMultiplier" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.baseLevelUpMultiplier %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Düşman Hız Artışı
+                                <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Level başına düşmanların hareket hızı ne kadar artar?"></i>
+                            </label>
+                            <input type="number" step="0.01" name="enemySpeedMultiplier" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.enemySpeedMultiplier %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Başlangıç Spawn Hızı (ms)
+                                <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Oyun başlangıcında düşmanlar kaç ms'de bir belirir?"></i>
+                            </label>
+                            <input type="number" name="initialSpawnRate" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.initialSpawnRate %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Min Spawn Hızı (ms)
+                                <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Oyun ne kadar hızlanabilir? (Alt limit: 250ms tavsiye edilir)."></i>
+                            </label>
+                            <input type="number" name="minSpawnRate" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.minSpawnRate %>">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted small">
+                                Level Başına Spawn Azalışı (ms)
+                                <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Her level atlandığında düşmanların belirme hızı kaç ms kısalır?"></i>
+                            </label>
+                            <input type="number" name="spawnRateDecreasePerLevel" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.spawnRateDecreasePerLevel %>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Powerup ve Güçlendirici Dengesi -->
+        <div class="col-md-6">
+            <div class="card h-100 border-info">
+                <div class="card-header bg-transparent border-info">
+                    <h5 class="mb-0 text-info"><i class="fas fa-bolt me-2"></i> Güçlendirici (Powerup) Dengesi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted small">
+                                Powerup Çıkma Aralığı (ms)
+                                <i class="fas fa-info-circle ms-1 text-info" data-bs-toggle="tooltip" title="Güçlendirici kutuları kaç milisaniyede bir belirme denemesi yapar?"></i>
+                            </label>
+                            <input type="number" name="powerupSpawnInterval" class="form-control bg-dark border-info text-white" value="<%= config.gameplay.powerupSpawnInterval !== undefined ? config.gameplay.powerupSpawnInterval : 10000 %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                Powerup Belirme Şansı (0-1)
+                                <i class="fas fa-info-circle ms-1 text-info" data-bs-toggle="tooltip" title="Her aralık dolduğunda kutu çıkma olasılığıdır. 0.5 = %50."></i>
+                            </label>
+                            <input type="number" step="0.05" name="powerupChance" class="form-control bg-dark border-info text-white" value="<%= config.gameplay.powerupChance !== undefined ? config.gameplay.powerupChance : 0.5 %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                ➕ Can Düşme Oranı (0-1)
+                                <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Hem kutulardan hem düşmanlardan çıkan her powerup'ın 'Can' olma olasılığıdır."></i>
+                            </label>
+                            <input type="number" step="0.05" name="healDropRate" class="form-control bg-dark border-danger text-white" value="<%= config.gameplay.healDropRate !== undefined ? config.gameplay.healDropRate : 0.25 %>">
+                        </div>
+                        
+                        <div class="col-12 mt-2">
+                            <h6 class="text-info border-bottom border-secondary pb-1 small mb-3">Diğer Güçlendirici Ağırlıkları (Göreceli)</h6>
+                        </div>
+                        
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                🛡️ Kalkan Ağırlığı
+                                <i class="fas fa-info-circle ms-1 text-info" data-bs-toggle="tooltip" title="Kalkan çıkma önceliği. Diğerlerine göre daha yüksekse daha sık çıkar."></i>
+                            </label>
+                            <input type="number" step="0.1" name="shieldWeight" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.shieldWeight || 1.0 %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                ⏱️ Yavaşlatma Ağırlığı
+                                <i class="fas fa-info-circle ms-1 text-info" data-bs-toggle="tooltip" title="Düşmanları yavaşlatan saatin çıkma önceliği."></i>
+                            </label>
+                            <input type="number" step="0.1" name="slowWeight" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.slowWeight || 1.0 %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                🧲 Mıknatıs Ağırlığı
+                                <i class="fas fa-info-circle ms-1 text-info" data-bs-toggle="tooltip" title="Mıknatısın çıkma önceliği."></i>
+                            </label>
+                            <input type="number" step="0.1" name="magnetWeight" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.magnetWeight || 1.0 %>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small">
+                                ☢️ Nükleer Ağırlığı
+                                <i class="fas fa-info-circle ms-1 text-danger" data-bs-toggle="tooltip" title="Tüm ekranı temizleyen nükleer bombanın çıkma önceliği. Çok düşük tutulması önerilir."></i>
+                            </label>
+                            <input type="number" step="0.1" name="nukeWeight" class="form-control bg-dark border-secondary text-white" value="<%= config.gameplay.nukeWeight || 1.0 %>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analiz Dokümanı -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-transparent border-secondary d-flex justify-content-between">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2 text-success"></i> Oyun Mekaniği ve Ekonomi Analizi</h5>
+                    <small class="text-muted">Son Güncelleme: <%= config.analysisDoc.lastUpdated ? new Date(config.analysisDoc.lastUpdated).toLocaleString('tr-TR') : 'Hiç' %></small>
+                </div>
+                <div class="card-body">
+                    <textarea name="analysisDocContent" class="form-control bg-dark border-secondary text-white font-monospace" rows="15" style="font-size: 0.9rem;"><%= config.analysisDoc.content %></textarea>
+                    <div class="mt-2 small text-muted">
+                        <i class="fas fa-info-circle me-1"></i> Bu alan oyunun temel matematiksel modelini ve denge analizini içerir. Kod değişikliklerinden sonra bu dokümanı güncel tutmayı unutmayın.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistem Ayarları -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-transparent border-secondary">
+                    <h5 class="mb-0"><i class="fas fa-server me-2 text-warning"></i> Sistem Ayarları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="maintenanceMode" id="maintenanceMode" <%= config.system.maintenanceMode ? 'checked' : '' %>>
+                        <label class="form-check-label" for="maintenanceMode">Bakım Modu Aktif</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Minimum İstemci Versiyonu
+                            <i class="fas fa-info-circle ms-1 text-warning" data-bs-toggle="tooltip" title="Bu versiyonun altındaki oyuncular güncelleyin uyarısı alır. Örn: 1.0.5"></i>
+                        </label>
+                        <input type="text" name="minClientVersion" class="form-control bg-dark border-secondary text-white" value="<%= config.system.minClientVersion %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Sistem Duyurusu
+                            <i class="fas fa-info-circle ms-1 text-warning" data-bs-toggle="tooltip" title="Giriş ekranında veya ana menüde gösterilecek genel duyuru metni."></i>
+                        </label>
+                        <textarea name="announcementMessage" class="form-control bg-dark border-secondary text-white" rows="3"><%= config.system.announcementMessage %></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reklam Ayarları -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-ad me-2 text-info"></i> Reklam ve Gelir Yönetimi</h5>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="adsEnabled" id="adsEnabled" <%= config.ads.isEnabled ? 'checked' : '' %>>
+                        <label class="form-check-label" for="adsEnabled">Reklamlar Aktif</label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <!-- Ad Unit IDs -->
+                        <div class="col-md-4">
+                            <h6 class="text-primary border-bottom border-secondary pb-2 mb-3">Reklam Birimleri (AdMob)</h6>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Android App ID
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="AdMob panelinden alınan Android uygulama kimliği."></i>
+                                </label>
+                                <input type="text" name="androidAppId" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.androidAppId %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    iOS App ID
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="AdMob panelinden alınan iOS uygulama kimliği."></i>
+                                </label>
+                                <input type="text" name="iosAppId" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.iosAppId %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Banner Unit ID
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Banner reklamları için oluşturulan birim kimliği."></i>
+                                </label>
+                                <input type="text" name="bannerAdUnitId" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.bannerAdUnitId %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Interstitial Unit ID
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Geçiş reklamları için oluşturulan birim kimliği."></i>
+                                </label>
+                                <input type="text" name="interstitialAdUnitId" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.interstitialAdUnitId %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Rewarded Unit ID
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Ödüllü reklamlar için oluşturulan birim kimliği."></i>
+                                </label>
+                                <input type="text" name="rewardedAdUnitId" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.rewardedAdUnitId %>">
+                            </div>
+                        </div>
+
+                        <!-- Ad Strategy -->
+                        <div class="col-md-4">
+                            <h6 class="text-primary border-bottom border-secondary pb-2 mb-3">Reklam Stratejisi</h6>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Geçiş Reklamı Aralığı
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Her kaç oyunda bir zorunlu reklam (interstitial) gösterilsin? 3 = 3 oyun bittiğinde 1 reklam."></i>
+                                </label>
+                                <input type="number" name="interstitialInterval" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.interstitialInterval %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Ödüllü Bekleme (sn)
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Bir sonraki ödüllü reklam butonunun aktifleşmesi için gereken saniye."></i>
+                                </label>
+                                <input type="number" name="rewardedCooldown" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.cooldowns.rewardedAd %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Geçiş Reklamı Bekleme (sn)
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="İki geçiş reklamı arasında en az kaç saniye soğuma süresi olmalı?"></i>
+                                </label>
+                                <input type="number" name="interstitialCooldown" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.cooldowns.interstitialAd %>">
+                            </div>
+                        </div>
+
+                        <!-- Rewards -->
+                        <div class="col-md-4">
+                            <h6 class="text-primary border-bottom border-secondary pb-2 mb-3">Ödüller ve Teşvikler</h6>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="reviveEnabled" id="reviveEnabled" <%= config.ads.rewards.reviveEnabled ? 'checked' : '' %>>
+                                <label class="form-check-label" for="reviveEnabled">Reklamla Canlanma (Revive)</label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Reklam Başına Coin
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Oyuncu ödüllü reklam izlediğinde hesabına kaç coin eklenir?"></i>
+                                </label>
+                                <input type="number" name="coinsPerAd" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.rewards.coinsPerAd %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Reklam Başına Gem
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Oyuncu ödüllü reklam izlediğinde hesabına kaç gem eklenir?"></i>
+                                </label>
+                                <input type="number" name="gemsPerAd" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.rewards.gemsPerAd %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    Günlük Reklam Limiti
+                                    <i class="fas fa-info-circle ms-1 text-primary" data-bs-toggle="tooltip" title="Bir kullanıcı günde en fazla kaç tane ödüllü reklam izleyebilir?"></i>
+                                </label>
+                                <input type="number" name="dailyLimit" class="form-control bg-dark border-secondary text-white" value="<%= config.ads.rewards.dailyLimit %>">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boss Management Redirect -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-skull-crossbones me-2 text-warning"></i> Boss Yapılandırması</h5>
+                    <span class="badge bg-warning text-dark">Taşındı</span>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-dungeon fa-3x text-secondary mb-3"></i>
+                    <h4>Boss Yönetimi Taşındı</h4>
+                    <p class="text-muted">Artık tüm bosslar (Klasik ve AI Destekli) yeni Boss Yönetim panelinden yönetilmektedir.</p>
+                    <a href="/admin/bosses" class="btn btn-outline-warning mt-2">
+                        <i class="fas fa-external-link-alt me-2"></i> Boss Yönetimine Git
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 text-end mb-5">
+            <hr class="border-secondary">
+            <button type="submit" class="btn btn-primary px-5 py-2">
+                <i class="fas fa-save me-2"></i> Ayarları Kaydet
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        // --- DRAG AND DROP IMPLEMENTATION ---
+        const container = document.getElementById('boss-list-container');
+        let draggedItem = null;
+
+        if (container) {
+            // Event Delegation for Drag Start
+            container.addEventListener('dragstart', function(e) {
+                draggedItem = e.target.closest('.boss-card-item');
+                if (draggedItem) {
+                    draggedItem.style.opacity = '0.5';
+                    e.dataTransfer.effectAllowed = 'move';
+                    // Optional: Set a drag image
+                }
+            });
+
+            container.addEventListener('dragend', function(e) {
+                if (draggedItem) {
+                    draggedItem.style.opacity = '1';
+                    draggedItem = null;
+                    reindexBosses(); // Update numbers after drop
+                }
+            });
+
+            container.addEventListener('dragover', function(e) {
+                e.preventDefault(); // Necessary to allow dropping
+                e.dataTransfer.dropEffect = 'move';
+                
+                const target = e.target.closest('.boss-card-item');
+                
+                if (target && target !== draggedItem && container.contains(target)) {
+                    const siblings = Array.from(container.querySelectorAll('.boss-card-item'));
+                    const draggedIndex = siblings.indexOf(draggedItem);
+                    const targetIndex = siblings.indexOf(target);
+
+                    // Simple swap logic based on index comparison
+                    // If moving forward in list (dragged < target), place after target
+                    // If moving backward (dragged > target), place before target
+                    // But in a grid, visual 'after' means next sibling.
+                    
+                    // To avoid flickering, we only swap if we are really 'over' it.
+                    // Since it's a grid, just formatting it linearly works best.
+                    
+                    if (draggedIndex < targetIndex) {
+                        target.after(draggedItem);
+                    } else {
+                        target.before(draggedItem);
+                    }
+                }
+            });
+        }
+    });
+
+    function reindexBosses() {
+        const container = document.getElementById('boss-list-container');
+        const newOrder = Array.from(container.children).filter(c => c.classList.contains('boss-card-item'));
+        
+        newOrder.forEach((item, newIndex) => {
+            // Update Level Badge
+            const badge = item.querySelector('.boss-level-badge');
+            if(badge) badge.textContent = 'BÖLÜM ' + (newIndex + 1);
+
+            // Update Input Names
+            const inputs = item.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    // distinct regex to replace bosses[X] with bosses[newIndex]
+                    const newName = name.replace(/bosses\[\d+\]/, `bosses[${newIndex}]`);
+                    input.setAttribute('name', newName);
+                }
+            });
+            
+            // Start gradients update if SVGs exist (legacy support)
+            const gradients = item.querySelectorAll('linearGradient, radialGradient, filter');
+            gradients.forEach(g => {
+                const id = g.id;
+                if(id) {
+                     const baseId = id.split('-')[0];
+                     g.id = `${baseId}-${newIndex}`;
+                }
+            });
+            
+            // Update Fill URLs in SVGs 
+            const fills = item.querySelectorAll('[fill^="url(#"]');
+            fills.forEach(f => {
+                 const val = f.getAttribute('fill');
+                 const baseVal = val.split('-')[0]; // url(#hullGradient
+                 f.setAttribute('fill', `${baseVal}-${newIndex})`);
+            });
+             const filters = item.querySelectorAll('[filter^="url(#"]');
+            filters.forEach(f => {
+                 const val = f.getAttribute('filter');
+                 const baseVal = val.split('-')[0]; // url(#glow
+                 f.setAttribute('filter', `${baseVal}-${newIndex})`);
+            });
+            
+            // Update Canvas ID and script if present (New Renderer)
+            const canvas = item.querySelector('canvas');
+            if(canvas) {
+                 canvas.id = `boss-preview-${newIndex}`;
+            }
+        });
+    }
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,194 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-file-contract me-2 text-primary-custom"></i><%= title %></h1>
+    
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-globe me-1"></i> Dil: <%= currentLang.toUpperCase() %>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="langDropdown">
+                <% translations.forEach(t => { %>
+                    <li><a class="dropdown-item <%= currentLang === t.language ? 'active' : '' %>" href="/admin/legal?lang=<%= t.language %>"><%= t.language.toUpperCase() %></a></li>
+                <% }) %>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Bilgi</h5>
+            </div>
+            <div class="card-body small">
+                <p>Bu bölüm, oyuna yeni kayıt olan pilotların kabul etmesi gereken <strong>Kullanıcı Sözleşmesini</strong> düzenlemenizi sağlar.</p>
+                <p>Burada yaptığınız değişiklikler "Kayıt" sayfasındaki modala anında yansıtılacaktır.</p>
+                <ul>
+                    <li><strong>Seçili Dil:</strong> <%= currentLang.toUpperCase() %></li>
+                    <li>Sözleşme 10 ana başlıktan oluşur.</li>
+                    <li>Başlıkları (`H`) ve İçerikleri (`P`) ayrı ayrı düzenleyebilirsiniz.</li>
+                </ul>
+                <div class="alert alert-warning bg-warning bg-opacity-10 border-warning text-warning mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Kayıt sayfasında "Kabul Ediyorum" butonu bu sözleşme onaylanmadan aktif olmaz.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <form action="/admin/legal/save" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="language" value="<%= currentLang %>">
+
+            <div class="card mb-4 shadow-sm border-primary">
+                <div class="card-header bg-primary bg-opacity-10 py-3">
+                    <h5 class="mb-0 text-primary-custom"><i class="fas fa-heading me-2"></i>Genel Ayarlar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Modal Başlığı</label>
+                        <input type="text" name="modal_title" class="form-control" value="<%= translation.data['auth.terms.modal_title'] %>" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Son Güncelleme Tarihi Metni</label>
+                            <input type="text" name="last_updated" class="form-control" value="<%= translation.data['auth.terms.last_updated'] %>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Buton Metni (Kabul Et)</label>
+                            <input type="text" name="accept_text" class="form-control" value="<%= translation.data['auth.terms.accept'] %>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sections-container">
+                <% for(let i = 1; i <= sectionCount; i++) { %>
+                    <div class="card mb-3 shadow-sm border-secondary section-card" id="section-<%= i %>">
+                        <div class="card-header bg-dark d-flex justify-content-between align-items-center border-bottom border-secondary">
+                            <h6 class="mb-0 text-primary-custom opacity-75">BÖLÜM <%= i %></h6>
+                            <div>
+                                <span class="badge bg-dark border border-secondary text-muted me-2">Section <%= i %></span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSection(<%= i %>)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body bg-dark bg-opacity-25">
+                            <div class="mb-3">
+                                <label class="form-label small text-info opacity-75">Başlık (H<%= i %>)</label>
+                                <input type="text" name="h<%= i %>" class="form-control" value="<%= translation.data['auth.terms.h' + i] %>">
+                            </div>
+                            <div>
+                                <label class="form-label small text-info opacity-75">İçerik (P<%= i %>)</label>
+                                <textarea name="p<%= i %>" class="form-control" rows="3"><%= translation.data['auth.terms.p' + i] %></textarea>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="mb-4">
+                <button type="button" class="btn btn-outline-success w-100 py-2 border-dashed" onclick="addSection()">
+                    <i class="fas fa-plus-circle me-1"></i> Yeni Bölüm Ekle
+                </button>
+            </div>
+
+            <div class="mb-5 d-grid">
+                <button type="submit" class="btn btn-primary btn-lg shadow">
+                    <i class="fas fa-save me-2"></i> SÖZLEŞMEYİ KAYDET (<%= currentLang.toUpperCase() %>)
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .border-dashed { border-style: dashed !important; border-width: 2px !important; }
+    .section-card { transition: all 0.3s ease; }
+</style>
+
+<script>
+    let sectionCount = <%= sectionCount %>;
+
+    function addSection() {
+        sectionCount++;
+        const container = document.getElementById('sections-container');
+        const sectionHtml = `
+            <div class="card mb-3 shadow-sm border-secondary section-card" id="section-${sectionCount}" style="opacity: 0; transform: translateY(10px);">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center border-bottom border-secondary">
+                    <h6 class="mb-0 text-primary-custom opacity-75">BÖLÜM ${sectionCount}</h6>
+                    <div>
+                        <span class="badge bg-dark border border-secondary text-muted me-2">Section ${sectionCount}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSection(${sectionCount})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body bg-dark bg-opacity-25">
+                    <div class="mb-3">
+                        <label class="form-label small text-info opacity-75">Başlık (H${sectionCount})</label>
+                        <input type="text" name="h${sectionCount}" class="form-control" placeholder="Örn: 1. Hizmet Şartları" required>
+                    </div>
+                    <div>
+                        <label class="form-label small text-info opacity-75">İçerik (P${sectionCount})</label>
+                        <textarea name="p${sectionCount}" class="form-control" rows="3" placeholder="Sözleşme metni buraya..." required></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', sectionHtml);
+        
+        // Simple animation
+        setTimeout(() => {
+            const newCard = document.getElementById(`section-${sectionCount}`);
+            newCard.style.opacity = '1';
+            newCard.style.transform = 'translateY(0)';
+            newCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 10);
+    }
+
+    function removeSection(id) {
+        if (confirm('Bu bölümü silmek istediğinizden emin misiniz?')) {
+            const element = document.getElementById(`section-${id}`);
+            element.style.opacity = '0';
+            element.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                element.remove();
+                reorderSections();
+            }, 300);
+        }
+    }
+
+    function reorderSections() {
+        const cards = document.querySelectorAll('.section-card');
+        sectionCount = 0;
+        
+        cards.forEach((card, index) => {
+            sectionCount = index + 1;
+            card.id = `section-${sectionCount}`;
+            
+            // Update labels and names
+            card.querySelector('h6').textContent = `BÖLÜM ${sectionCount}`;
+            card.querySelector('.badge').textContent = `Section ${sectionCount}`;
+            
+            const btn = card.querySelector('.btn-outline-danger');
+            btn.setAttribute('onclick', `removeSection(${sectionCount})`);
+            
+            const labels = card.querySelectorAll('.form-label');
+            labels[0].textContent = `Başlık (H${sectionCount})`;
+            labels[1].textContent = `İçerik (P${sectionCount})`;
+            
+            const inputs = card.querySelectorAll('.form-control');
+            inputs[0].name = `h${sectionCount}`;
+            inputs[1].name = `p${sectionCount}`;
+        });
+    }
+</script>
+
+<%- include('partials/footer') %>
